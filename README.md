@@ -1,6 +1,7 @@
 ## CRServoF - The CSRF serial protocol to PWM servo converter
 
 I wanted to create a small project to mess around with PWM servo output for ExpressLRS, and thought this might be of use for other people.
+[![YouTube Demo](https://img.youtube.com/vi/WrQQ0svOxig/hqdefault.jpg)](https://youtu.be/WrQQ0svOxig)
 
 ### What it does
 
