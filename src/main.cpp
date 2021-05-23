@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <CrsfSerial.h>
 #include <median.h>
+#include "target.h"
 
 #define NUM_OUTPUTS 8
 
@@ -14,22 +15,16 @@ constexpr int OUTPUT_FAILSAFE[NUM_OUTPUTS] = {
     };
 // Define the pins used to output servo PWM, must use hardware PWM,
 // and change HardwareTimer targets below if the timers change
-constexpr PinName OUTPUT_PINS[NUM_OUTPUTS] = { PA_15, PB_3, PB_10, PB_11, PA_6, PA_7, PB_0, PB_1 }; // TIM2 CH1-4, TIM3CH1-4
+constexpr PinName OUTPUT_PINS[NUM_OUTPUTS] = { OUTPUT_PIN_MAP };
 
 #define PWM_FREQ_HZ     50
-#define DPIN_LED        LED_BUILTIN
-#define APIN_VBAT       A0
-#define LED_INVERTED    1
 #define VBAT_INTERVAL   500
 #define VBAT_SMOOTH     5
-// Resistor divider used on VBAT input, R1+R2 must be less than 3178
-#define VBAT_R1         820
-#define VBAT_R2         120
 // Scale used to calibrate or change to CRSF standard 0.1 scale
 #define VBAT_SCALE      1.0
 
 // Local Variables
-static HardwareSerial CrsfSerialStream(USART2); // UART2 RX=PA3 TX=PA2
+static HardwareSerial CrsfSerialStream(USART2);
 static CrsfSerial crsf(CrsfSerialStream);
 static int g_OutputsUs[NUM_OUTPUTS];
 static struct tagConnectionState {
