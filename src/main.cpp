@@ -24,7 +24,7 @@ constexpr PinName OUTPUT_PINS[NUM_OUTPUTS] = { OUTPUT_PIN_MAP };
 #define VBAT_SCALE      1.0
 
 // Local Variables
-static HardwareSerial CrsfSerialStream(USART2);
+static HardwareSerial CrsfSerialStream(USART_INPUT);
 static CrsfSerial crsf(CrsfSerialStream);
 static int g_OutputsUs[NUM_OUTPUTS];
 static struct tagConnectionState {
