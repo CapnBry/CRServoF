@@ -2,6 +2,10 @@
 #include <CrsfSerial.h>
 #include <median.h>
 
+// board types -only define one
+#define Blue_Pill // uncomment for Blue_Pill 
+//#define CC3D // uncomment for CC3D
+
 #define NUM_OUTPUTS 8
 
 // Configuration
@@ -14,11 +18,26 @@ constexpr int OUTPUT_FAILSAFE[NUM_OUTPUTS] = {
     };
 // Define the pins used to output servo PWM, must use hardware PWM,
 // and change HardwareTimer targets below if the timers change
-constexpr PinName OUTPUT_PINS[NUM_OUTPUTS] = { PA_15, PB_3, PB_10, PB_11, PA_6, PA_7, PB_0, PB_1 }; // TIM2 CH1-4, TIM3CH1-4
+
+#if defined (Blue_Pill)
+     // original BluePill config
+    constexpr PinName OUTPUT_PINS[NUM_OUTPUTS] = { PA_15, PB_3, PB_10, PB_11, PA_6, PA_7, PB_0, PB_1 }; // TIM2 CH1-4, TIM3CH1-4
+    #define DPIN_LED        LED_BUILTIN 
+    #define APIN_VBAT       A0
+    static HardwareSerial CrsfSerialStream(USART2); // UART2 RX=PA3 TX=PA2
+#endif    
+
+#if defined (CC3D)
+    // CC3D config - attempting to use PWM output pins 1-6 and PWM input pins 1,2 
+    constexpr PinName OUTPUT_PINS[NUM_OUTPUTS] = { PB_9, PB_8, PB_7, PA_8, PB_4, PA_2, PB_6, PB_5 }; // timers: TIM4_CH4,TIM4_CH3,TIM4_CH2,TIM1_CH1,IM3_CH1,TIM2_CH3,TIM4_CH1,TIM3_CH2
+    #define DPIN_LED        PB_3 
+    // CC3D config -attempting to use stock ping to connect voltage sense circuit (PA_14 or PA_13)
+    #define APIN_VBAT       PA_14
+    // CC3D config -attempting to use flexi port
+    static HardwareSerial CrsfSerialStream(USART3); // UART3 RX=PA11 TX=PA10
+#endif    
 
 #define PWM_FREQ_HZ     50
-#define DPIN_LED        LED_BUILTIN
-#define APIN_VBAT       A0
 #define LED_INVERTED    1
 #define VBAT_INTERVAL   500
 #define VBAT_SMOOTH     5
@@ -28,8 +47,7 @@ constexpr PinName OUTPUT_PINS[NUM_OUTPUTS] = { PA_15, PB_3, PB_10, PB_11, PA_6, 
 // Scale used to calibrate or change to CRSF standard 0.1 scale
 #define VBAT_SCALE      1.0
 
-// Local Variables
-static HardwareSerial CrsfSerialStream(USART2); // UART2 RX=PA3 TX=PA2
+// Common Variables
 static CrsfSerial crsf(CrsfSerialStream);
 static int g_OutputsUs[NUM_OUTPUTS];
 static struct tagConnectionState {
