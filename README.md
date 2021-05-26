@@ -28,6 +28,18 @@ If you have a receiver that outputs CRSF serial protocol (ExpressLRS, Crossfire,
 
 To flash, use platformio and an STLINK adapter, build either target but the F103_serial environment creates a USB serial port for debug logging when plugged in over USB.
 
+#### CC3D board wiring and flashing
+|item|note|
+|----|----|
+| CRSF receiver | connect to CC3D "Flexi" port (GND, 5v, reciever RX, reciever TX) |
+| ELRS passthrough flash | use CC3D mini USB connector (need external power for the reciever) |
+| status LED | illuminates durring SYNC |
+| Servo output 1-6 (and power) | normal CC3D PWM output header |
+| Servo output 7,8 | configured on PWM input header 1,2 (untested) |
+| Voltage sensor | stock analog voltage sensor pin header "SWD" port (untested) |
+| sti-flash | over the CC3D "SWD" port (GND, 3.3v, SWDIO, SWCLCK) |
+
+
 ### Channel Mapping
 
 To change the channel mapping, use the `OUTPUT_MAP[]` array at the top. These are 1-based channels from the CRSF output, so 1 is usually Roll, 2 is Pitch and so on. 5 is AUX1 up to 12 is AUX8 for ExpressLRS, or up to 16 AUX12 for Crossfire models. The default map is `[ Roll, Pitch, Throttle, Yaw, AUX2, AUX3, AUX4, AUX12 ]` for my radio setup.
