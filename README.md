@@ -30,7 +30,7 @@ To flash, use platformio and an STLINK adapter, build either target but the F103
 
 ### Channel Mapping
 
-To change the channel mapping, use the `OUTPUT_MAP[]` array at the top. These are 1-based channels from the CRSF output, so 1 is usually Roll, 2 is Pitch and so on. 5 is AUX1 up to 12 is AUX8 for ExpressLRS, or up to 16 AUX12 for Crossfire models. The default map is `[ Roll, Pitch, Throttle, Yaw, AUX2, AUX3, AUX4, AUX12 ]` for my radio setup.
+To change the channel mapping, use the `OUTPUT_MAP[]` array at the top. These are 1-based channels from the CRSF output, so 1 is usually Roll, 2 is Pitch and so on. 5 is AUX1 up to 12 is AUX8 for ExpressLRS, or up to 16 AUX12 for Crossfire models. The default map is `[ Roll, Pitch, Throttle, Yaw, AUX2, AUX3, AUX4, AUX12 ]` for my radio setup. To invert the channel output, +100% becomes -100%, just use a negative number for the channel (e.g. -12 for AUX8 inverted).
 
 ### Failsafe
 
