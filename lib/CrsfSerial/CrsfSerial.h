@@ -19,7 +19,7 @@ public:
     void write(char *buf, size_t len);
     void queuePacket(uint8_t addr, uint8_t type, const void *payload, uint8_t len);
 
-    // Return current channel value (1-based)
+    // Return current channel value (1-based) in us
     int getChannel(unsigned int ch) const { return _channels[ch - 1]; }
     const crsfLinkStatistics_t *getLinkStatistics() const { return &_linkStatistics; }
     bool isLinkUp() const { return _linkIsUp; }

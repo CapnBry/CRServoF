@@ -7,7 +7,8 @@
 
 // Configuration
 // Map input CRSF channels (1-based, up to 16 for CRSF, 12 for ELRS) to outputs 1-8
-constexpr unsigned int OUTPUT_MAP[NUM_OUTPUTS] = { 1, 2, 3, 4, 6, 7, 8, 12 };
+// use a negative number to invert the signal (i.e. +100% becomes -100%)
+constexpr int OUTPUT_MAP[NUM_OUTPUTS] = { 1, 2, 3, 4, 6, 7, 8, 12 };
 // The failsafe action for each channel (fsaNoPulses, fsaHold, or microseconds)
 constexpr int OUTPUT_FAILSAFE[NUM_OUTPUTS] = {
     1500, 1500, 988, 1500,                  // ch1-ch4
@@ -66,7 +67,20 @@ static void servoSetUs(unsigned int servo, int usec)
 static void packetChannels()
 {
     for (unsigned int out=0; out<NUM_OUTPUTS; ++out)
-        servoSetUs(out, crsf.getChannel(OUTPUT_MAP[out]));
+    {
+        const int chInput = OUTPUT_MAP[out];
+        int usOutput; 
+        if (chInput > 0)
+            crsf.getChannel(chInput);
+        else
+        {
+            // if chInput is negative, invert the channel output
+            usOutput = crsf.getChannel(-chInput);
+            // (1500 - usOutput) + 1500
+            usOutput = 3000 - usOutput;
+        }
+        servoSetUs(out, usOutput);
+    }
 
     // for (unsigned int ch=0; ch<4; ++ch)
     // {
