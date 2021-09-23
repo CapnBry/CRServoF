@@ -71,7 +71,7 @@ static void packetChannels()
         const int chInput = OUTPUT_MAP[out];
         int usOutput; 
         if (chInput > 0)
-            crsf.getChannel(chInput);
+            usOutput = crsf.getChannel(chInput);
         else
         {
             // if chInput is negative, invert the channel output
