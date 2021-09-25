@@ -10,6 +10,7 @@ If you have a receiver that outputs CRSF serial protocol (ExpressLRS, Crossfire,
 
 ### Wiring and Flashing
 
+#### Bluepill
 | Pin | Description |
 |----|----|
 | 5V | 5V power input, 3.5V - 5.5V |
@@ -25,6 +26,28 @@ If you have a receiver that outputs CRSF serial protocol (ExpressLRS, Crossfire,
 | PB0 | Servo output CH7 - CRSF Channel 8 |
 | PB1 | Servo output CH8 - CRSF Channel 12 |
 | A0 | VBAT needs voltage divider, see below |
+
+#### Purplepill
+| Pin | Description |
+|----|----|
+| 5V | 5V power input, 3.5V - 5.5V |
+| GND | Ground, gotta have this |
+| TX | PA9 (connect to CRSF RX) |
+| RX | PA10 (connect to CRSF TX) |
+| PA3 | Servo output CH1 - CRSF Channel 1 |
+| PA2 | Servo output CH2 - CRSF Channel 2 |
+| PA1 | Servo output CH3 - CRSF Channel 3 |
+| PA0 | Servo output CH4 - CRSF Channel 4 |
+| PB0 | Servo output CH5 - CRSF Channel 6 |
+| PB1 | Servo output CH6 - CRSF Channel 7 |
+| PA6 | Servo output CH7 - CRSF Channel 8 |
+| PA7 | Servo output CH8 - CRSF Channel 12 |
+| CS | PA4 VBAT needs voltage divider, see below |
+| DIO | SWDIO on ST-Link v2 for programming |
+| DLK | SWCLK on ST-Link v2 for programming |
+| RST | RST on ST-Link v2 for programming |
+| GND | GND on ST-Link v2 for programming |
+| 3.3 | 3.3V on ST-Link v2 for programming |
 
 To flash, use platformio and an STLINK adapter, build either target but the F103_serial environment creates a USB serial port for debug logging when plugged in over USB.
 

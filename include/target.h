@@ -14,6 +14,12 @@
     #define USART_INPUT     USART3  // UART3 RX=PA11 TX=PA10 -CC3D Flexi port
     #define OUTPUT_PIN_MAP  PB_9, PB_8, PB_7, PA_8, PB_4, PA_2, PB_6, PB_5 // timers: TIM4_CH4,TIM4_CH3,TIM4_CH2,TIM1_CH1,IM3_CH1,TIM2_CH3,TIM4_CH1,TIM3_CH2
 
+#elif defined(TARGET_PURPLEPILL)  // CJMCU1038 Board https://stm32-base.org/boards/STM32F103C8T6-Purple-Pill.html
+    #define DPIN_LED        PB_11
+    #define LED_INVERTED    1
+    #define APIN_VBAT       PA_4  // PA_4=CS
+    #define USART_INPUT     USART1  // UART1 RX=PA10 TX=PA9
+    #define OUTPUT_PIN_MAP  PA_3, PA_2, PA_1, PA_0, PB_0, PB_1, PA_6, PA_7 // TIM2 CH1-4, TIM3CH1-4  PA_6=MIO PA_7=MOS
 #endif
 
 #if !defined(LED_INVERTED)
