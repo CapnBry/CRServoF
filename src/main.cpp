@@ -22,9 +22,15 @@ constexpr PinName OUTPUT_PINS[NUM_OUTPUTS] = { OUTPUT_PIN_MAP };
 #define VBAT_INTERVAL   500
 #define VBAT_SMOOTH     5
 // Scale used to calibrate or change to CRSF standard 0.1 scale
-#define VBAT_SCALE      1.0
+#define VBAT_SCALE      0.1
+
+// sent voltage divided by detected cell count
+#define VBAT_REPORT_CELL_VOLTAGE
+#define VBAT_MAX_CELL_VOLTAGE 430
+
 
 // Local Variables
+static int cellcount = -1;
 static HardwareSerial CrsfSerialStream(USART_INPUT);
 static CrsfSerial crsf(CrsfSerialStream);
 static int g_OutputsUs[NUM_OUTPUTS];
@@ -131,8 +137,18 @@ static void checkVbatt()
     unsigned int adc = g_State.vbatSmooth;
     g_State.vbatValue = 330U * adc * (VBAT_R1 + VBAT_R2) / VBAT_R2 / ((1 << 12) - 1);
 
-    uint8_t crsfbatt[CRSF_FRAME_BATTERY_SENSOR_PAYLOAD_SIZE] = { 0 };
+#ifdef VBAT_REPORT_CELL_VOLTAGE
+    if (cellcount < 0) {
+        cellcount = (g_State.vbatValue / VBAT_MAX_CELL_VOLTAGE) + 1;
+    } 
+    //Serial.print("Cellcount="); Serial.print(cellcount, DEC); Serial.print(" "); 
+
+    uint16_t scaledVoltage = g_State.vbatValue * VBAT_SCALE / cellcount;
+#else
     uint16_t scaledVoltage = g_State.vbatValue * VBAT_SCALE;
+#endif
+
+    uint8_t crsfbatt[CRSF_FRAME_BATTERY_SENSOR_PAYLOAD_SIZE] = { 0 };
     crsfbatt[0] = scaledVoltage >> 8;
     crsfbatt[1] = scaledVoltage & 0xff;
     crsf.queuePacket(CRSF_SYNC_BYTE, CRSF_FRAMETYPE_BATTERY_SENSOR, &crsfbatt, sizeof(crsfbatt));

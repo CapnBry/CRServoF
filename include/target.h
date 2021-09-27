@@ -29,5 +29,6 @@
 #if !defined(VBAT_R1) || !defined(VBAT_R2)
     // Resistor divider used on VBAT input, R1+R2 must be less than 3178
     #define VBAT_R1         820
-    #define VBAT_R2         120
+    #define VBAT_R2         220
 #endif
+
