@@ -10,23 +10,7 @@ If you have a receiver that outputs CRSF serial protocol (ExpressLRS, Crossfire,
 
 ### Wiring and Flashing
 
-| Pin | Description |
-|----|----|
-| 5V | 5V power input, 3.5V - 5.5V |
-| GND | Ground, gotta have this |
-| PA2 | TX (connect to CRSF RX) |
-| PA3 | RX (connect to CRSF TX) |
-| PA15 | Servo output CH1 - CRSF Channel 1 |
-| PB3 | Servo output CH2 - CRSF Channel 2 |
-| PB10 | Servo output CH3 - CRSF Channel 3 |
-| PB11 | Servo output CH4 - CRSF Channel 4 |
-| PA6 | Servo output CH5 - CRSF Channel 6 |
-| PA7 | Servo output CH6 - CRSF Channel 7 |
-| PB0 | Servo output CH7 - CRSF Channel 8 |
-| PB1 | Servo output CH8 - CRSF Channel 12 |
-| A0 | VBAT needs voltage divider, see below |
-
-To flash, use platformio and an STLINK adapter, build either target but the F103_serial environment creates a USB serial port for debug logging when plugged in over USB.
+See the wiki [Flashing and Wiring](https://github.com/CapnBry/CRServoF/wiki/Wiring)
 
 ### Channel Mapping
 
