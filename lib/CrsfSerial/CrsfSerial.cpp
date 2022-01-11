@@ -212,7 +212,7 @@ void CrsfSerial::write(uint8_t b)
     _port.write(b);
 }
 
-void CrsfSerial::write(char *buf, size_t len)
+void CrsfSerial::write(const uint8_t *buf, size_t len)
 {
     _port.write(buf, len);
 }
@@ -236,7 +236,7 @@ void CrsfSerial::queuePacket(uint8_t addr, uint8_t type, const void *payload, ui
     // Busywait until the serial port seems free
     //while (millis() - _lastReceive < 2)
     //    loop();
-    write((char *)buf, len + 4);
+    write(buf, len + 4);
 }
 
 void CrsfSerial::setPassthroughMode(bool val, unsigned int baud)

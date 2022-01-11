@@ -17,7 +17,7 @@ public:
     CrsfSerial(HardwareSerial &port);
     void loop();
     void write(uint8_t b);
-    void write(char *buf, size_t len);
+    void write(const uint8_t *buf, size_t len);
     void queuePacket(uint8_t addr, uint8_t type, const void *payload, uint8_t len);
 
     // Return current channel value (1-based) in us

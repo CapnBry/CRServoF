@@ -69,7 +69,7 @@ static void packetChannels()
     for (unsigned int out=0; out<NUM_OUTPUTS; ++out)
     {
         const int chInput = OUTPUT_MAP[out];
-        int usOutput; 
+        int usOutput;
         if (chInput > 0)
             usOutput = crsf.getChannel(chInput);
         else
@@ -169,7 +169,7 @@ static bool handleSerialCommand(char *cmd)
         // Force a reboot command since we want to send the reboot
         // at 420000 then switch to what the user wanted
         const uint8_t rebootcmd[] = { 0xEC,0x04,0x32,0x62,0x6c,0x0A };
-        crsf.write((char *)rebootcmd, sizeof(rebootcmd));
+        crsf.write(rebootcmd, sizeof(rebootcmd));
 
         unsigned int baud = atoi(cmd+20);
         crsf.setPassthroughMode(true, baud);
@@ -196,8 +196,8 @@ static void checkSerialInPassthrough()
     unsigned int avail;
     while ((avail = Serial.available()) != 0)
     {
-        char buf[16];
-        avail = Serial.readBytes(buf, min(sizeof(buf), avail));
+        uint8_t buf[16];
+        avail = Serial.readBytes((char *)buf, min(sizeof(buf), avail));
         crsf.write(buf, avail);
         digitalWrite(DPIN_LED, LED);
         LED = !LED;
