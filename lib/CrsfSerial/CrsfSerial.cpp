@@ -1,5 +1,4 @@
 #include "CrsfSerial.h"
-#include <util.h>
 
 // static void hexdump(void *p, size_t len)
 // {
@@ -63,7 +62,7 @@ void CrsfSerial::handleSerialIn()
         _rxBuf[_rxBufPos++] = b;
         handleByteReceived();
 
-        if (_rxBufPos == COUNT_OF(_rxBuf))
+        if (_rxBufPos == (sizeof(_rxBuf)/sizeof(_rxBuf[0])))
         {
             // Packet buffer filled and no valid packet found, dump the whole thing
             _rxBufPos = 0;

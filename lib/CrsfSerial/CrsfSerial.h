@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Arduino.h>
+#include <functional>
 #include <crc8.h>
 #include "crsf_protocol.h"
 
