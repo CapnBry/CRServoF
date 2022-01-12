@@ -30,13 +30,13 @@
 //     }
 // }
 
-CrsfSerial::CrsfSerial(HardwareSerial &port) :
+CrsfSerial::CrsfSerial(HardwareSerial &port, uint32_t baud) :
     _port(port), _crc(0xd5),
     _lastReceive(0), _lastChannelsPacket(0), _linkIsUp(false),
     _passthroughMode(false)
 {
     // Crsf serial is 420000 baud for V2
-    _port.begin(CRSF_BAUDRATE);
+    _port.begin(baud);
 }
 
 // Call from main loop to update
