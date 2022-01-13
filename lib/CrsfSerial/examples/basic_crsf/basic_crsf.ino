@@ -4,12 +4,12 @@ CrsfSerial crsf(Serial1, CRSF_BAUDRATE); // pass any HardwareSerial port
 
 /***
  * This callback is called whenever new channel values are available.
- * Use crsf.getChannel(x) to get us channel values.
+ * Use crsf.getChannel(x) to get us channel values (1-16).
  ***/
 void packetChannels()
 {
-    Serial.print("CH0=");
-    Serial.println(crsf.getChannel(0));
+    Serial.print("CH1=");
+    Serial.println(crsf.getChannel(1));
 }
 
 void setup()
