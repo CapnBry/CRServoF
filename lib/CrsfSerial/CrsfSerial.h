@@ -40,6 +40,7 @@ private:
     uint8_t _rxBufPos;
     Crc8 _crc;
     crsfLinkStatistics_t _linkStatistics;
+    uint32_t _baud;
     uint32_t _lastReceive;
     uint32_t _lastChannelsPacket;
     bool _linkIsUp;
