@@ -124,3 +124,23 @@ typedef struct crsf_sensor_battery_s
     unsigned capacity : 24; // mah
     unsigned remaining : 8; // %
 } PACKED crsf_sensor_battery_t;
+
+#if !defined(__linux__)
+static inline uint16_t htobe16(uint16_t val)
+{
+#if (__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)
+    return val;
+#else
+    return __builtin_bswap16(val);
+#endif
+}
+
+static inline uint32_t htobe32(uint32_t val)
+{
+#if (__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)
+    return val;
+#else
+    return __builtin_bswap32(val);
+#endif
+}
+#endif

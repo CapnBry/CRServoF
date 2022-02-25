@@ -131,10 +131,10 @@ static void checkVbatt()
     unsigned int adc = g_State.vbatSmooth;
     g_State.vbatValue = 330U * adc * (VBAT_R1 + VBAT_R2) / VBAT_R2 / ((1 << 12) - 1);
 
-    uint8_t crsfbatt[CRSF_FRAME_BATTERY_SENSOR_PAYLOAD_SIZE] = { 0 };
+    crsf_sensor_battery_t crsfbatt = { 0 };
     uint16_t scaledVoltage = g_State.vbatValue * VBAT_SCALE;
-    crsfbatt[0] = scaledVoltage >> 8;
-    crsfbatt[1] = scaledVoltage & 0xff;
+    // Values are MSB first (BigEndian)
+    crsfbatt.voltage = htobe16(scaledVoltage);
     crsf.queuePacket(CRSF_SYNC_BYTE, CRSF_FRAMETYPE_BATTERY_SENSOR, &crsfbatt, sizeof(crsfbatt));
 
     //Serial.print("ADC="); Serial.print(adc, DEC);
