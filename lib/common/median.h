@@ -33,27 +33,37 @@ public:
      */
     T calc() const
     {
-        unsigned int minIdx = 0, maxIdx = 0;
+        return calc_scaled() / scale();
+    }
+
+    /**
+     * Calculate the MedianAvg but without dividing by count
+     * Useful for preserving precision when applying external scaling
+     */
+    T calc_scaled() const
+    {
+        T minVal, maxVal, retVal;
+        maxVal = minVal = retVal = _data[0];
         // Find the minumum and maximum elements in the list
-        for (unsigned int i = 0; i < N; ++i)
+        // while summing all the values
+        for (unsigned int i = 1; i < N; ++i)
         {
             T val = _data[i];
-            if (val < _data[minIdx])
-            minIdx = i;
-            if (val > _data[maxIdx])
-            maxIdx = i;
+            retVal += val;
+            if (val < minVal)
+                minVal = val;
+            if (val > maxVal)
+                maxVal = val;
         }
-        // Run through again and sum all the non-min and max elements
-        T retVal = 0;
-        for (unsigned int i = 0; i < N; ++i)
-        {
-            if (i != minIdx && i != maxIdx)
-            retVal += _data[i];
-        }
-
-        retVal /= (N - 2);
-        return retVal;
+        // Subtract out the min and max values to discard them
+        return (retVal - (minVal + maxVal));
     }
+
+    /**
+     * Scale of the value returned by calc_scaled()
+     * Divide by this to convert from unscaled to original units
+     */
+    size_t scale() const { return N - 2; }
 
     /**
      * Operator to just assign as type
