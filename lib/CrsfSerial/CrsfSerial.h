@@ -1,7 +1,6 @@
 #pragma once
 
 #include <Arduino.h>
-#include <functional>
 #include <crc8.h>
 #include "crsf_protocol.h"
 
@@ -28,11 +27,11 @@ public:
     void setPassthroughMode(bool val, unsigned int baud = 0);
 
     // Event Handlers
-    std::function<void()> onLinkUp;
-    std::function<void()> onLinkDown;
-    std::function<void(uint8_t)> onShiftyByte;
-    std::function<void()> onPacketChannels;
-    std::function<void(crsfLinkStatistics_t *)> onPacketLinkStatistics;
+    void (*onLinkUp)();
+    void (*onLinkDown)();
+    void (*onPacketChannels)();
+    void (*onShiftyByte)(uint8_t b);
+    void (*onPacketLinkStatistics)(crsfLinkStatistics_t *ls);
 
 private:
     HardwareSerial &_port;
