@@ -260,7 +260,7 @@ static void setupCrsf()
     crsf.onLinkDown = &crsfLinkDown;
     crsf.onShiftyByte = &crsfShiftyByte;
     crsf.onPacketChannels = &packetChannels;
-    crsf.onPacketLinkStatistics = packetLinkStatistics;
+    crsf.onPacketLinkStatistics = &packetLinkStatistics;
     //crsf.setPassthroughMode(true);
 }
 
