@@ -3,6 +3,10 @@
 #include <median.h>
 #include "target.h"
 
+#if defined(TARGET_PICO)
+    #include <pinDefinitions.h>
+#endif
+
 #define NUM_OUTPUTS 8
 
 // Configuration
@@ -18,15 +22,22 @@ constexpr int OUTPUT_FAILSAFE[NUM_OUTPUTS] = {
 // and change HardwareTimer targets below if the timers change
 constexpr PinName OUTPUT_PINS[NUM_OUTPUTS] = { OUTPUT_PIN_MAP };
 
-#define PWM_FREQ_HZ     50
+#if !defined(PWM_FREQ_HZ)
+    #define PWM_FREQ_HZ     50
+#endif
 #define VBAT_INTERVAL   500
 #define VBAT_SMOOTH     5
 // Scale used to calibrate or change to CRSF standard 0.1 scale
 #define VBAT_SCALE      1.0
 
 // Local Variables
-static HardwareSerial CrsfSerialStream(USART_INPUT);
-static CrsfSerial crsf(CrsfSerialStream);
+#if defined(TARGET_STM)
+    static HardwareSerial CrsfSerialStream(USART_INPUT);
+    static CrsfSerial crsf(CrsfSerialStream);
+#elif defined(TARGET_PICO)
+    UART Serial2(UART_INPUT_TX, UART_INPUT_RX, 0, 0);
+    static CrsfSerial crsf(Serial2);
+#endif
 static int g_OutputsUs[NUM_OUTPUTS];
 static struct tagConnectionState {
     uint32_t lastVbatRead;
@@ -46,21 +57,46 @@ static void crsfShiftyByte(uint8_t b)
 
 static void servoSetUs(unsigned int servo, int usec)
 {
-    if (usec > 0)
-    {
-        // 0 means it was disabled previously, enable OUTPUT mode
-        if (g_OutputsUs[servo] == 0)
-            // vv pinMode(p, OUTPUT) vv
-            pin_function(OUTPUT_PINS[servo], STM_PIN_DATA(STM_MODE_OUTPUT_PP, GPIO_NOPULL, 0));
-        pwm_start(OUTPUT_PINS[servo], PWM_FREQ_HZ, usec, MICROSEC_COMPARE_FORMAT);
-    }
-    else
-    {
-        pwm_stop(OUTPUT_PINS[servo]);
-        // vv pinMode(p, INPUT_PULLDOWN) vv
-        pin_function(OUTPUT_PINS[servo], STM_PIN_DATA(STM_MODE_INPUT, GPIO_PULLDOWN, 0));
-
-    }
+    #if defined(TARGET_STM)
+        if (usec > 0)
+        {
+            // 0 means it was disabled previously, enable OUTPUT mode
+            if (g_OutputsUs[servo] == 0)
+                // vv pinMode(p, OUTPUT) vv
+                pin_function(OUTPUT_PINS[servo], STM_PIN_DATA(STM_MODE_OUTPUT_PP, GPIO_NOPULL, 0));
+            pwm_start(OUTPUT_PINS[servo], PWM_FREQ_HZ, usec, MICROSEC_COMPARE_FORMAT);
+        }
+        else
+        {
+            pwm_stop(OUTPUT_PINS[servo]);
+            // vv pinMode(p, INPUT_PULLDOWN) vv
+            pin_function(OUTPUT_PINS[servo], STM_PIN_DATA(STM_MODE_INPUT, GPIO_PULLDOWN, 0));
+        }
+    #elif defined(TARGET_PICO)
+        static int write_resolution = 10;
+        static int maxRes = 1024;
+        static int pin;
+        static int val;
+        pin = OUTPUT_PINS[servo];
+        val = map(usec, CRSF_CHANNEL_VALUE_MID, CRSF_CHANNEL_VALUE_MAX, 0, maxRes);
+        float percent = (float)val/(float)((1 << write_resolution)-1);
+        mbed::PwmOut* pwm = digitalPinToPwm(pin);
+        if (pwm == NULL) {
+            pwm = new mbed::PwmOut(digitalPinToPinName(pin));
+            digitalPinToPwm(pin) = pwm;
+            #if defined(PWM_FREQ_HZ)
+                pwm->period_ms(PWM_FREQ_HZ / 1000.0);
+            #else
+                pwm->period_ms(2); //500Hz // TODO: apply PWM_FREQ_HZ
+            #endif
+        }
+        if (percent >= 0) {
+            pwm->write(percent);
+        } else {
+            delete pwm;
+            digitalPinToPwm(pin) = NULL;
+        }
+    #endif
     g_OutputsUs[servo] = usec;
 }
 
