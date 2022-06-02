@@ -78,7 +78,7 @@ static void servoSetUs(unsigned int servo, int usec)
         static int pin;
         static int val;
         pin = OUTPUT_PINS[servo];
-        val = map(usec, CRSF_CHANNEL_VALUE_MID, CRSF_CHANNEL_VALUE_MAX, 0, maxRes);
+        val = map(usec, 988, 2011, 0, maxRes);
         float percent = (float)val/(float)((1 << write_resolution)-1);
         mbed::PwmOut* pwm = digitalPinToPwm(pin);
         if (pwm == NULL) {
@@ -87,7 +87,7 @@ static void servoSetUs(unsigned int servo, int usec)
             #if defined(PWM_FREQ_HZ)
                 pwm->period_ms(PWM_FREQ_HZ / 1000.0);
             #else
-                pwm->period_ms(2); //500Hz // TODO: apply PWM_FREQ_HZ
+                pwm->period_ms(2); //500Hz
             #endif
         }
         if (percent >= 0) {
