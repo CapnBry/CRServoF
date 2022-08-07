@@ -134,6 +134,9 @@ void CrsfSerial::processPacketIn(uint8_t len)
     {
         switch (hdr->type)
         {
+        case CRSF_FRAMETYPE_GPS:
+            packetGps(hdr);
+            break;
         case CRSF_FRAMETYPE_RC_CHANNELS_PACKED:
             packetChannelsPacked(hdr);
             break;
@@ -205,6 +208,20 @@ void CrsfSerial::packetLinkStatistics(const crsf_header_t *p)
 
     if (onPacketLinkStatistics)
         onPacketLinkStatistics(&_linkStatistics);
+}
+
+void CrsfSerial::packetGps(const crsf_header_t *p)
+{
+    const crsf_sensor_gps_t *gps = (crsf_sensor_gps_t *)p->data;
+    _gpsSensor.latitude = be32toh(gps->latitude);
+    _gpsSensor.longitude = be32toh(gps->longitude);
+    _gpsSensor.groundspeed = be16toh(gps->groundspeed);
+    _gpsSensor.heading = be16toh(gps->heading);
+    _gpsSensor.altitude = be16toh(gps->altitude);
+    _gpsSensor.satellites = gps->satellites;
+
+    if (onPacketGps)
+        onPacketGps(&_gpsSensor);
 }
 
 void CrsfSerial::write(uint8_t b)

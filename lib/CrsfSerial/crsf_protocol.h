@@ -121,9 +121,19 @@ typedef struct crsf_sensor_battery_s
 {
     unsigned voltage : 16;  // V * 10 big endian
     unsigned current : 16;  // A * 10 big endian
-    unsigned capacity : 24; // mah
+    unsigned capacity : 24; // mah big endian
     unsigned remaining : 8; // %
 } PACKED crsf_sensor_battery_t;
+
+typedef struct crsf_sensor_gps_s
+{
+    int32_t latitude;   // degree / 10,000,000 big endian
+    int32_t longitude;  // degree / 10,000,000 big endian
+    uint16_t groundspeed;  // km/h / 10 big endian
+    uint16_t heading;   // GPS heading, degree/100 big endian
+    uint16_t altitude;  // meters, +1000m big endian
+    uint8_t satellites; // satellites
+} PACKED crsf_sensor_gps_t;
 
 #if !defined(__linux__)
 static inline uint16_t htobe16(uint16_t val)
@@ -135,7 +145,25 @@ static inline uint16_t htobe16(uint16_t val)
 #endif
 }
 
+static inline uint16_t be16toh(uint16_t val)
+{
+#if (__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)
+    return val;
+#else
+    return __builtin_bswap16(val);
+#endif
+}
+
 static inline uint32_t htobe32(uint32_t val)
+{
+#if (__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)
+    return val;
+#else
+    return __builtin_bswap32(val);
+#endif
+}
+
+static inline uint32_t be32toh(uint32_t val)
 {
 #if (__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)
     return val;
