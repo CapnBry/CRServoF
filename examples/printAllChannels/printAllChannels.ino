@@ -19,8 +19,11 @@ void setup()
     Serial.begin(115200);
     Serial.println("initialized");
 
-    // Attach the channels callback
+    //crsf.onLinkUp = &crsfLinkUp;
+    //crsf.onLinkDown = &crsfLinkDown;
+    //crsf.onShiftyByte = &crsfShiftyByte;
     crsf.onPacketChannels = &packetChannels;
+    //crsf.onPacketLinkStatistics = &packetLinkStatistics;
 }
 
 void loop()
