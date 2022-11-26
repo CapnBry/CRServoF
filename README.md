@@ -1,8 +1,6 @@
-## CRServoF - The CSRF serial protocol to PWM servo converter
+## ArduinoCRSF - The CSRF serial protocol Arduino library
 
-I wanted to create a small project to mess around with PWM servo output for ExpressLRS, and thought this might be of use for other people.
-
-[![YouTube Demo](https://img.youtube.com/vi/WrQQ0svOxig/hqdefault.jpg)](https://youtu.be/WrQQ0svOxig)
+WARNING: project is under construction! expect the rest of this readme to change
 
 ### What it does
 
