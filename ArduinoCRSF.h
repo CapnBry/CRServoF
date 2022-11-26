@@ -2,7 +2,7 @@
 
 #include <Arduino.h>
 #include <crc8.h>
-#include "crsf_protocol.h"
+#include <crsf_protocol.h>
 
 enum eFailsafeAction { fsaNoPulses, fsaHold };
 

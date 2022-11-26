@@ -1,4 +1,4 @@
-#include "CrsfSerial.h"
+#include <ArduinoCRSF.h>
 
 // static void hexdump(void *p, size_t len)
 // {
