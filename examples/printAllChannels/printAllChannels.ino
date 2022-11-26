@@ -7,8 +7,8 @@ CrsfSerial crsf(Serial2, CRSF_BAUDRATE);
 //Use crsf.getChannel(x) to get us channel values (1-16).
 void packetChannels()
 {
-  for (int i = 1; i <= 16; i++){
-    Serial.print(crsf.getChannel(ChNum));
+  for (int ChannelNum = 1; ChannelNum <= 16; ChannelNum++){
+    Serial.print(crsf.getChannel(ChannelNum));
     Serial.print(", ");
   }
   Serial.println(" ");
