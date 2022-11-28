@@ -1,12 +1,16 @@
 #include <ArduinoCRSF.h>
 
-CrsfSerial::CrsfSerial(HardwareSerial &port, uint32_t baud) :
-    _port(port), _crc(0xd5), _baud(baud),
+CrsfSerial::CrsfSerial() :
+    _crc(0xd5),
     _lastReceive(0), _lastChannelsPacket(0), _linkIsUp(false),
     _passthroughMode(false)
 {
     // Crsf serial is 420000 baud for V2
-    _port.begin(_baud);
+}
+
+void CrsfSerial::begin(Stream &port)
+{
+  this->_port = &port;
 }
 
 // Call from main loop to update
@@ -17,9 +21,9 @@ void CrsfSerial::update()
 
 void CrsfSerial::handleSerialIn()
 {
-    while (_port.available())
+    while (_port->available())
     {
-        uint8_t b = _port.read();
+        uint8_t b = _port->read();
         _lastReceive = millis();
 
         if (_passthroughMode)
@@ -196,12 +200,12 @@ void CrsfSerial::packetGps(const crsf_header_t *p)
 
 void CrsfSerial::write(uint8_t b)
 {
-    _port.write(b);
+    _port->write(b);
 }
 
 void CrsfSerial::write(const uint8_t *buf, size_t len)
 {
-    _port.write(buf, len);
+    _port->write(buf, len);
 }
 
 void CrsfSerial::queuePacket(uint8_t addr, uint8_t type, const void *payload, uint8_t len)
@@ -226,12 +230,8 @@ void CrsfSerial::queuePacket(uint8_t addr, uint8_t type, const void *payload, ui
     write(buf, len + 4);
 }
 
-void CrsfSerial::setPassthroughMode(bool val, unsigned int baud)
+void CrsfSerial::setPassthroughMode(bool val)
 {
     _passthroughMode = val;
-    _port.flush();
-    if (baud != 0)
-        _port.begin(baud);
-    else
-        _port.begin(_baud);
+    _port->flush();
 }

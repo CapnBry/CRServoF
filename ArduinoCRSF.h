@@ -13,7 +13,9 @@ public:
     static const unsigned int CRSF_PACKET_TIMEOUT_MS = 100;
     static const unsigned int CRSF_FAILSAFE_STAGE1_MS = 300;
 
-    CrsfSerial(HardwareSerial &port, uint32_t baud = CRSF_BAUDRATE);
+    //CrsfSerial(Stream& port, uint32_t baud = CRSF_BAUDRATE);
+    CrsfSerial();
+    void begin(Stream& port);
     void update();
     void write(uint8_t b);
     void write(const uint8_t *buf, size_t len);
@@ -25,7 +27,7 @@ public:
     const crsf_sensor_gps_t *getGpsSensor() const { return &_gpsSensor; }
     bool isLinkUp() const { return _linkIsUp; }
     bool getPassthroughMode() const { return _passthroughMode; }
-    void setPassthroughMode(bool val, unsigned int baud = 0);
+    void setPassthroughMode(bool val);
 
     // Event Handlers
     void (*onLinkUp)();
@@ -36,7 +38,7 @@ public:
     void (*onPacketGps)(crsf_sensor_gps_t *gpsSensor);
 
 private:
-    HardwareSerial &_port;
+    Stream* _port;
     uint8_t _rxBuf[CRSF_MAX_PACKET_LEN+3];
     uint8_t _rxBufPos;
     Crc8 _crc;
