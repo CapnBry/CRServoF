@@ -1,35 +1,5 @@
 #include <ArduinoCRSF.h>
 
-// static void hexdump(void *p, size_t len)
-// {
-//     char *data = (char *)p;
-//     while (len > 0)
-//     {
-//         uint8_t linepos = 0;
-//         char* linestart = data;
-//         // Binary part
-//         while (len > 0 && linepos < 16)
-//         {
-//             if (*data < 0x0f)
-//             Serial.write('0');
-//             Serial.print(*data, HEX);
-//             Serial.write(' ');
-//             ++data;
-//             ++linepos;
-//             --len;
-//         }
-
-//         // Spacer to align last line
-//         for (uint8_t i = linepos; i < 16; ++i)
-//             Serial.print("   ");
-
-//         // ASCII part
-//         for (uint8_t i = 0; i < linepos; ++i)
-//             Serial.write((linestart[i] < ' ') ? '.' : linestart[i]);
-//         Serial.println();
-//     }
-// }
-
 CrsfSerial::CrsfSerial(HardwareSerial &port, uint32_t baud) :
     _port(port), _crc(0xd5), _baud(baud),
     _lastReceive(0), _lastChannelsPacket(0), _linkIsUp(false),
@@ -40,7 +10,7 @@ CrsfSerial::CrsfSerial(HardwareSerial &port, uint32_t baud) :
 }
 
 // Call from main loop to update
-void CrsfSerial::loop()
+void CrsfSerial::update()
 {
     handleSerialIn();
 }

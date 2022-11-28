@@ -29,5 +29,5 @@ void setup()
 void loop()
 {
     // Must call CrsfSerial.loop() in loop() to process data
-    crsf.loop();
+    crsf.update();
 }
