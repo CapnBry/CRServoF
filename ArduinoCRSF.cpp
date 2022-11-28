@@ -5,7 +5,7 @@ CrsfSerial::CrsfSerial() :
     _lastReceive(0), _lastChannelsPacket(0), _linkIsUp(false),
     _passthroughMode(false)
 {
-    // Crsf serial is 420000 baud for V2
+     
 }
 
 void CrsfSerial::begin(Stream &port)
