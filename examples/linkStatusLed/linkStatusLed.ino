@@ -4,6 +4,8 @@
 #define PIN_RX 7
 #define PIN_TX 8
 
+#define PIN_LED 36
+
 // Set up a new Serial object
 HardwareSerial crsfSerial(1);
 ArduinoCRSF crsf;
@@ -17,23 +19,28 @@ void setup()
   if (!crsfSerial) while (1) Serial.println("Invalid crsfSerial configuration");
 
   crsf.begin(crsfSerial);
+  
+  pinMode(PIN_LED, OUTPUT);
+  digitalWrite(PIN_LED, LOW);
 }
 
 void loop()
 {
-    // Must call crsf.update() in loop() to process data
-    crsf.update();
-    
-    printChannels();
+  // Must call crsf.update() in loop() to process data
+  crsf.update();
+  
+  updateLinkStatusLed();
 }
 
-//Use crsf.getChannel(x) to get us channel values (1-16).
-void printChannels()
+void updateLinkStatusLed()
 {
-  for (int ChannelNum = 1; ChannelNum <= 16; ChannelNum++)
+  if(crsf.isLinkUp())
   {
-    Serial.print(crsf.getChannel(ChannelNum));
-    Serial.print(", ");
+    digitalWrite(PIN_LED, HIGH);
   }
-  Serial.println(" ");
+  else
+  {
+    digitalWrite(PIN_LED, LOW);
+    // Perform the failsafe action
+  }
 }

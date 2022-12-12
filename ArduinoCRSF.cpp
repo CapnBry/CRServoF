@@ -1,37 +1,29 @@
 #include <ArduinoCRSF.h>
 
-CrsfSerial::CrsfSerial() :
+ArduinoCRSF::ArduinoCRSF() :
     _crc(0xd5),
-    _lastReceive(0), _lastChannelsPacket(0), _linkIsUp(false),
-    _passthroughMode(false)
+    _lastReceive(0), _lastChannelsPacket(0), _linkIsUp(false)
 {
      
 }
 
-void CrsfSerial::begin(Stream &port)
+void ArduinoCRSF::begin(Stream &port)
 {
   this->_port = &port;
 }
 
 // Call from main loop to update
-void CrsfSerial::update()
+void ArduinoCRSF::update()
 {
     handleSerialIn();
 }
 
-void CrsfSerial::handleSerialIn()
+void ArduinoCRSF::handleSerialIn()
 {
     while (_port->available())
     {
         uint8_t b = _port->read();
         _lastReceive = millis();
-
-        if (_passthroughMode)
-        {
-            if (onShiftyByte)
-                onShiftyByte(b);
-            continue;
-        }
 
         _rxBuf[_rxBufPos++] = b;
         handleByteReceived();
@@ -47,7 +39,7 @@ void CrsfSerial::handleSerialIn()
     checkLinkDown();
 }
 
-void CrsfSerial::handleByteReceived()
+void ArduinoCRSF::handleByteReceived()
 {
     bool reprocess;
     do
@@ -83,7 +75,7 @@ void CrsfSerial::handleByteReceived()
     } while (reprocess);
 }
 
-void CrsfSerial::checkPacketTimeout()
+void ArduinoCRSF::checkPacketTimeout()
 {
     // If we haven't received data in a long time, flush the buffer a byte at a time (to trigger shiftyByte)
     if (_rxBufPos > 0 && millis() - _lastReceive > CRSF_PACKET_TIMEOUT_MS)
@@ -91,17 +83,15 @@ void CrsfSerial::checkPacketTimeout()
             shiftRxBuffer(1);
 }
 
-void CrsfSerial::checkLinkDown()
+void ArduinoCRSF::checkLinkDown()
 {
     if (_linkIsUp && millis() - _lastChannelsPacket > CRSF_FAILSAFE_STAGE1_MS)
     {
-        if (onLinkDown)
-            onLinkDown();
         _linkIsUp = false;
     }
 }
 
-void CrsfSerial::processPacketIn(uint8_t len)
+void ArduinoCRSF::processPacketIn(uint8_t len)
 {
     const crsf_header_t *hdr = (crsf_header_t *)_rxBuf;
     if (hdr->device_addr == CRSF_ADDRESS_FLIGHT_CONTROLLER)
@@ -122,7 +112,7 @@ void CrsfSerial::processPacketIn(uint8_t len)
 }
 
 // Shift the bytes in the RxBuf down by cnt bytes
-void CrsfSerial::shiftRxBuffer(uint8_t cnt)
+void ArduinoCRSF::shiftRxBuffer(uint8_t cnt)
 {
     // If removing the whole thing, just set pos to 0
     if (cnt >= _rxBufPos)
@@ -130,9 +120,6 @@ void CrsfSerial::shiftRxBuffer(uint8_t cnt)
         _rxBufPos = 0;
         return;
     }
-
-    if (cnt == 1 && onShiftyByte)
-        onShiftyByte(_rxBuf[0]);
 
     // Otherwise do the slow shift down
     uint8_t *src = &_rxBuf[cnt];
@@ -143,7 +130,7 @@ void CrsfSerial::shiftRxBuffer(uint8_t cnt)
         *dst++ = *src++;
 }
 
-void CrsfSerial::packetChannelsPacked(const crsf_header_t *p)
+void ArduinoCRSF::packetChannelsPacked(const crsf_header_t *p)
 {
     crsf_channels_t *ch = (crsf_channels_t *)&p->data;
     _channels[0] = ch->ch0;
@@ -166,8 +153,6 @@ void CrsfSerial::packetChannelsPacked(const crsf_header_t *p)
     for (unsigned int i=0; i<CRSF_NUM_CHANNELS; ++i)
         _channels[i] = map(_channels[i], CRSF_CHANNEL_VALUE_1000, CRSF_CHANNEL_VALUE_2000, 1000, 2000);
 
-    if (!_linkIsUp && onLinkUp)
-        onLinkUp();
     _linkIsUp = true;
     _lastChannelsPacket = millis();
 
@@ -175,7 +160,7 @@ void CrsfSerial::packetChannelsPacked(const crsf_header_t *p)
         onPacketChannels();
 }
 
-void CrsfSerial::packetLinkStatistics(const crsf_header_t *p)
+void ArduinoCRSF::packetLinkStatistics(const crsf_header_t *p)
 {
     const crsfLinkStatistics_t *link = (crsfLinkStatistics_t *)p->data;
     memcpy(&_linkStatistics, link, sizeof(_linkStatistics));
@@ -184,7 +169,7 @@ void CrsfSerial::packetLinkStatistics(const crsf_header_t *p)
         onPacketLinkStatistics(&_linkStatistics);
 }
 
-void CrsfSerial::packetGps(const crsf_header_t *p)
+void ArduinoCRSF::packetGps(const crsf_header_t *p)
 {
     const crsf_sensor_gps_t *gps = (crsf_sensor_gps_t *)p->data;
     _gpsSensor.latitude = be32toh(gps->latitude);
@@ -198,21 +183,19 @@ void CrsfSerial::packetGps(const crsf_header_t *p)
         onPacketGps(&_gpsSensor);
 }
 
-void CrsfSerial::write(uint8_t b)
+void ArduinoCRSF::write(uint8_t b)
 {
     _port->write(b);
 }
 
-void CrsfSerial::write(const uint8_t *buf, size_t len)
+void ArduinoCRSF::write(const uint8_t *buf, size_t len)
 {
     _port->write(buf, len);
 }
 
-void CrsfSerial::queuePacket(uint8_t addr, uint8_t type, const void *payload, uint8_t len)
+void ArduinoCRSF::queuePacket(uint8_t addr, uint8_t type, const void *payload, uint8_t len)
 {
     if (!_linkIsUp)
-        return;
-    if (_passthroughMode)
         return;
     if (len > CRSF_MAX_PACKET_LEN)
         return;
@@ -228,10 +211,4 @@ void CrsfSerial::queuePacket(uint8_t addr, uint8_t type, const void *payload, ui
     //while (millis() - _lastReceive < 2)
     //    loop();
     write(buf, len + 4);
-}
-
-void CrsfSerial::setPassthroughMode(bool val)
-{
-    _passthroughMode = val;
-    _port->flush();
 }

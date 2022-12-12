@@ -6,15 +6,14 @@
 
 enum eFailsafeAction { fsaNoPulses, fsaHold };
 
-class CrsfSerial
+class ArduinoCRSF
 {
 public:
     // Packet timeout where buffer is flushed if no data is received in this time
     static const unsigned int CRSF_PACKET_TIMEOUT_MS = 100;
     static const unsigned int CRSF_FAILSAFE_STAGE1_MS = 300;
 
-    //CrsfSerial(Stream& port, uint32_t baud = CRSF_BAUDRATE);
-    CrsfSerial();
+    ArduinoCRSF();
     void begin(Stream& port);
     void update();
     void write(uint8_t b);
@@ -26,14 +25,9 @@ public:
     const crsfLinkStatistics_t *getLinkStatistics() const { return &_linkStatistics; }
     const crsf_sensor_gps_t *getGpsSensor() const { return &_gpsSensor; }
     bool isLinkUp() const { return _linkIsUp; }
-    bool getPassthroughMode() const { return _passthroughMode; }
-    void setPassthroughMode(bool val);
-
+    
     // Event Handlers
-    void (*onLinkUp)();
-    void (*onLinkDown)();
     void (*onPacketChannels)();
-    void (*onShiftyByte)(uint8_t b);
     void (*onPacketLinkStatistics)(crsfLinkStatistics_t *ls);
     void (*onPacketGps)(crsf_sensor_gps_t *gpsSensor);
 
@@ -48,7 +42,6 @@ private:
     uint32_t _lastReceive;
     uint32_t _lastChannelsPacket;
     bool _linkIsUp;
-    bool _passthroughMode;
     int _channels[CRSF_NUM_CHANNELS];
 
     void handleSerialIn();
