@@ -27,35 +27,35 @@ enum {
     CRSF_FRAME_LENGTH_NON_PAYLOAD = 4, // combined length of all fields except payload
 };
 
-enum {
-    CRSF_FRAME_GPS_PAYLOAD_SIZE = 15,
-    CRSF_FRAME_BATTERY_SENSOR_PAYLOAD_SIZE = 8,
-    CRSF_FRAME_LINK_STATISTICS_PAYLOAD_SIZE = 10,
-    CRSF_FRAME_RC_CHANNELS_PAYLOAD_SIZE = 22, // 11 bits per channel * 16 channels = 22 bytes.
-    CRSF_FRAME_ATTITUDE_PAYLOAD_SIZE = 6,
-};
-
 typedef enum
 {
     CRSF_FRAMETYPE_GPS = 0x02,
-    CRSF_FRAMETYPE_BATTERY_SENSOR = 0x08,
+    CRSF_FRAMETYPE_VARIO = 0x07,
+    CRSF_FRAMETYPE_BATTERY_SENSOR = 0x08, //TX only
+    CRSF_FRAMETYPE_BARO_ALTITUDE = 0x09,
     CRSF_FRAMETYPE_LINK_STATISTICS = 0x14,
-    CRSF_FRAMETYPE_OPENTX_SYNC = 0x10,
-    CRSF_FRAMETYPE_RADIO_ID = 0x3A,
+    // CRSF_FRAMETYPE_OPENTX_SYNC = 0x10,               //not in edgeTX?
+    // CRSF_FRAMETYPE_RADIO_ID = 0x3A,
     CRSF_FRAMETYPE_RC_CHANNELS_PACKED = 0x16,
+    // TODO: Investigate why LINK_RX_ID = 0x1C and LINK_TX_ID = 0x1D are not in here? should they be?
     CRSF_FRAMETYPE_ATTITUDE = 0x1E,
-    CRSF_FRAMETYPE_FLIGHT_MODE = 0x21,
-    // Extended Header Frames, range: 0x28 to 0x96
-    CRSF_FRAMETYPE_DEVICE_PING = 0x28,
-    CRSF_FRAMETYPE_DEVICE_INFO = 0x29,
-    CRSF_FRAMETYPE_PARAMETER_SETTINGS_ENTRY = 0x2B,
-    CRSF_FRAMETYPE_PARAMETER_READ = 0x2C,
-    CRSF_FRAMETYPE_PARAMETER_WRITE = 0x2D,
-    CRSF_FRAMETYPE_COMMAND = 0x32,
-    // MSP commands
-    CRSF_FRAMETYPE_MSP_REQ = 0x7A,   // response request using msp sequence as command
-    CRSF_FRAMETYPE_MSP_RESP = 0x7B,  // reply with 58 byte chunked binary
-    CRSF_FRAMETYPE_MSP_WRITE = 0x7C, // write with 8 byte chunked binary (OpenTX outbound telemetry buffer limit)
+    // CRSF_FRAMETYPE_FLIGHT_MODE = 0x21,
+  // Extended Header Frames, range: 0x28 to 0x96
+    // CRSF_FRAMETYPE_DEVICE_PING = 0x28,
+    // CRSF_FRAMETYPE_DEVICE_INFO = 0x29,
+    // CRSF_FRAMETYPE_PARAMETER_SETTINGS_ENTRY = 0x2B,  //not in edgeTX?
+    // CRSF_FRAMETYPE_PARAMETER_READ = 0x2C,            //not in edgeTX?
+    // CRSF_FRAMETYPE_PARAMETER_WRITE = 0x2D,           //not in edgeTX?
+    // CRSF_FRAMETYPE_COMMAND = 0x32,
+  // KISS frames                                        //not in edgeTX?
+    // CRSF_FRAMETYPE_KISS_REQ  = 0x78,
+    // CRSF_FRAMETYPE_KISS_RESP = 0x79,
+  // MSP commands                                       //not in edgeTX?
+    // CRSF_FRAMETYPE_MSP_REQ = 0x7A,   // response request using msp sequence as command
+    // CRSF_FRAMETYPE_MSP_RESP = 0x7B,  // reply with 58 byte chunked binary
+    // CRSF_FRAMETYPE_MSP_WRITE = 0x7C, // write with 8 byte chunked binary (OpenTX outbound telemetry buffer limit)
+  // Ardupilot frames
+    // CRSF_FRAMETYPE_ARDUPILOT_RESP = 0x80,
 } crsf_frame_type_e;
 
 typedef enum
@@ -117,7 +117,7 @@ typedef struct crsfPayloadLinkstatistics_s
     int8_t downlink_SNR;
 } crsfLinkStatistics_t;
 
-typedef struct crsf_sensor_battery_s
+typedef struct crsf_sensor_battery_s //TODO: Convert these bitfields to ints?
 {
     unsigned voltage : 16;  // V * 10 big endian
     unsigned current : 16;  // A * 10 big endian
@@ -134,6 +134,23 @@ typedef struct crsf_sensor_gps_s
     uint16_t altitude;  // meters, +1000m big endian
     uint8_t satellites; // satellites
 } PACKED crsf_sensor_gps_t;
+
+typedef struct crsf_sensor_baro_s
+{
+    uint16_t altitude; // Altitude in decimeters + 10000dm, or Altitude in meters if high bit is set, BigEndian
+} PACKED crsf_sensor_baro_t;
+
+typedef struct crsf_sensor_vario_s
+{
+    int16_t verticalspd;  // Vertical speed in cm/s, BigEndian
+} PACKED crsf_sensor_vario_t;
+
+typedef struct crsf_sensor_attitude_s
+{
+    uint16_t pitch;  // pitch in radians, BigEndian
+    uint16_t roll;  // roll in radians, BigEndian
+    uint16_t yaw;  // yaw in radians, BigEndian
+} PACKED crsf_sensor_attitude_t;
 
 #if !defined(__linux__)
 static inline uint16_t htobe16(uint16_t val)

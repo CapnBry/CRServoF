@@ -23,7 +23,6 @@ void loop()
 {
     // Must call crsf.update() in loop() to process data
     crsf.update();
-    
     printChannels();
 }
 

@@ -107,8 +107,14 @@ void ArduinoCRSF::processPacketIn(uint8_t len)
         case CRSF_FRAMETYPE_LINK_STATISTICS:
             packetLinkStatistics(hdr);
             break;
+        case CRSF_FRAMETYPE_BARO_ALTITUDE:
+            packetBaro(hdr);
+            break;
+        case CRSF_FRAMETYPE_VARIO:
+            packetVario(hdr);
+            break;
         }
-    } // CRSF_ADDRESS_FLIGHT_CONTROLLER
+    }
 }
 
 // Shift the bytes in the RxBuf down by cnt bytes
@@ -181,6 +187,32 @@ void ArduinoCRSF::packetGps(const crsf_header_t *p)
 
     if (onPacketGps)
         onPacketGps(&_gpsSensor);
+}
+
+void ArduinoCRSF::packetBaro(const crsf_header_t *p)
+{
+    const crsf_sensor_baro_t *baro = (crsf_sensor_baro_t *)p->data;
+    _baroSensor.altitude = be16toh(baro->altitude); //TODO: Untested!
+    
+    //TODO: should this have a callback?
+}
+
+void ArduinoCRSF::packetVario(const crsf_header_t *p)
+{
+    const crsf_sensor_vario_t *vario = (crsf_sensor_vario_t *)p->data;
+    _varioSensor.verticalspd = be16toh(vario->verticalspd); //TODO: Untested!
+    
+    //TODO: should this have a callback?
+}
+
+void ArduinoCRSF::packetAttitude(const crsf_header_t *p)
+{
+    const crsf_sensor_attitude_t *attitude = (crsf_sensor_attitude_t *)p->data;
+    _attitudeSensor.pitch = be16toh(attitude->pitch); //TODO: Untested!
+    _attitudeSensor.roll = be16toh(attitude->roll); //TODO: Untested!
+    _attitudeSensor.yaw = be16toh(attitude->yaw); //TODO: Untested!
+    
+    //TODO: should this have a callback?
 }
 
 void ArduinoCRSF::write(uint8_t b)
