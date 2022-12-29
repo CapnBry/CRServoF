@@ -158,18 +158,12 @@ void ArduinoCRSF::packetChannelsPacked(const crsf_header_t *p)
 
     _linkIsUp = true;
     _lastChannelsPacket = millis();
-
-    if (onPacketChannels)
-        onPacketChannels();
 }
 
 void ArduinoCRSF::packetLinkStatistics(const crsf_header_t *p)
 {
     const crsfLinkStatistics_t *link = (crsfLinkStatistics_t *)p->data;
     memcpy(&_linkStatistics, link, sizeof(_linkStatistics));
-
-    if (onPacketLinkStatistics)
-        onPacketLinkStatistics(&_linkStatistics);
 }
 
 void ArduinoCRSF::packetGps(const crsf_header_t *p)
@@ -181,9 +175,6 @@ void ArduinoCRSF::packetGps(const crsf_header_t *p)
     _gpsSensor.heading = be16toh(gps->heading);
     _gpsSensor.altitude = be16toh(gps->altitude);
     _gpsSensor.satellites = gps->satellites;
-
-    if (onPacketGps)
-        onPacketGps(&_gpsSensor);
 }
 
 void ArduinoCRSF::packetBaroVario(const crsf_header_t *p)

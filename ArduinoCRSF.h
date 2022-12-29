@@ -27,11 +27,6 @@ public:
     const crsf_sensor_baro_vario_t *getBaroVarioSensor() const { return &_baroVarioSensor; }
     const crsf_sensor_attitude_t *getAttitudeSensor() const { return &_attitudeSensor; }
     bool isLinkUp() const { return _linkIsUp; }
-    
-    // Event Handlers
-    void (*onPacketChannels)();
-    void (*onPacketLinkStatistics)(crsfLinkStatistics_t *ls);
-    void (*onPacketGps)(crsf_sensor_gps_t *gpsSensor);
 
 private:
     Stream* _port;
@@ -55,7 +50,7 @@ private:
     void checkPacketTimeout();
     void checkLinkDown();
 
-    // Packet Handlers
+    // Packet RX Handlers
     void packetChannelsPacked(const crsf_header_t *p);
     void packetLinkStatistics(const crsf_header_t *p);
     void packetGps(const crsf_header_t *p);
