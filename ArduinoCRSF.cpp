@@ -107,11 +107,8 @@ void ArduinoCRSF::processPacketIn(uint8_t len)
         case CRSF_FRAMETYPE_LINK_STATISTICS:
             packetLinkStatistics(hdr);
             break;
-        case CRSF_FRAMETYPE_BARO_ALTITUDE:
-            packetBaro(hdr);
-            break;
-        case CRSF_FRAMETYPE_VARIO:
-            packetVario(hdr);
+        case CRSF_FRAMETYPE_BARO_VARIO:
+            packetBaroAltitude(hdr);
             break;
         }
     }
@@ -189,18 +186,11 @@ void ArduinoCRSF::packetGps(const crsf_header_t *p)
         onPacketGps(&_gpsSensor);
 }
 
-void ArduinoCRSF::packetBaro(const crsf_header_t *p)
+void ArduinoCRSF::packetBaroVario(const crsf_header_t *p)
 {
-    const crsf_sensor_baro_t *baro = (crsf_sensor_baro_t *)p->data;
-    _baroSensor.altitude = be16toh(baro->altitude); //TODO: Untested!
-    
-    //TODO: should this have a callback?
-}
-
-void ArduinoCRSF::packetVario(const crsf_header_t *p)
-{
-    const crsf_sensor_vario_t *vario = (crsf_sensor_vario_t *)p->data;
-    _varioSensor.verticalspd = be16toh(vario->verticalspd); //TODO: Untested!
+    const crsf_sensor_baro_vario_t *baroVario = (crsf_sensor_baroVario_t *)p->data;
+    _baroVarioSensor.altitude = be16toh(baroVario->altitude); //TODO: Untested!
+    _baroVarioSensor.verticalspd = be16toh(baroVario->verticalspd); //TODO: Untested!
     
     //TODO: should this have a callback?
 }

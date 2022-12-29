@@ -30,14 +30,15 @@ enum {
 typedef enum
 {
     CRSF_FRAMETYPE_GPS = 0x02,
-    CRSF_FRAMETYPE_VARIO = 0x07,
-    CRSF_FRAMETYPE_BATTERY_SENSOR = 0x08, //TX only
+    //CRSF_FRAMETYPE_VARIO = 0x07 //no need to support
+    CRSF_FRAMETYPE_BATTERY_SENSOR = 0x08,               //has no TX function
     CRSF_FRAMETYPE_BARO_ALTITUDE = 0x09,
     CRSF_FRAMETYPE_LINK_STATISTICS = 0x14,
     // CRSF_FRAMETYPE_OPENTX_SYNC = 0x10,               //not in edgeTX?
     // CRSF_FRAMETYPE_RADIO_ID = 0x3A,
-    CRSF_FRAMETYPE_RC_CHANNELS_PACKED = 0x16,
-    // TODO: Investigate why LINK_RX_ID = 0x1C and LINK_TX_ID = 0x1D are not in here? should they be?
+    CRSF_FRAMETYPE_RC_CHANNELS_PACKED = 0x16,           //RX only? has no TX function
+    // CRSF_FRAMETYPE_LINK_RX_ID = 0x1C //no need to support
+    // CRSF_FRAMETYPE_LINK_TX_ID = 0x1D //no need to support
     CRSF_FRAMETYPE_ATTITUDE = 0x1E,
     // CRSF_FRAMETYPE_FLIGHT_MODE = 0x21,
   // Extended Header Frames, range: 0x28 to 0x96
@@ -135,15 +136,12 @@ typedef struct crsf_sensor_gps_s
     uint8_t satellites; // satellites
 } PACKED crsf_sensor_gps_t;
 
-typedef struct crsf_sensor_baro_s
+typedef struct crsf_sensor_baro_vario_s
 {
     uint16_t altitude; // Altitude in decimeters + 10000dm, or Altitude in meters if high bit is set, BigEndian
-} PACKED crsf_sensor_baro_t;
-
-typedef struct crsf_sensor_vario_s
-{
     int16_t verticalspd;  // Vertical speed in cm/s, BigEndian
-} PACKED crsf_sensor_vario_t;
+} PACKED crsf_sensor_baro_vario_t;
+
 
 typedef struct crsf_sensor_attitude_s
 {
