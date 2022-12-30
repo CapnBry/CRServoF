@@ -31,6 +31,7 @@ void setup()
   crsf.begin(crsfSerial);
 }
 
+float cap = 0;
 void loop()
 {
   // Must call crsf.update() in loop() to process data
@@ -38,7 +39,8 @@ void loop()
   
   int snsVin = analogRead(PIN_SNS_VIN);
   float batteryVoltage = ((float)snsVin * ADC_VLT / ADC_RES) * ((RESISTOR1 + RESISTOR2) / RESISTOR2);
-  sendRxBt(batteryVoltage, 1.2, 100, 100);
+  sendRxBattery(batteryVoltage, 1.2, cap += 10, 50);
+  delay(10);
 }
 
 static void sendRxBattery(float voltage, float current, float capacity, float remaining)
@@ -46,9 +48,9 @@ static void sendRxBattery(float voltage, float current, float capacity, float re
   crsf_sensor_battery_t crsfBatt = { 0 };
 
   // Values are MSB first (BigEndian)
-  crsfBatt.voltage = htobe16((uint16_t)(voltage * 10.0));     //Volts
-  crsfBatt.current = htobe16((uint16_t)(current * 10.0));     //Amps
-  crsfBatt.capacity = htobe16((uint16_t)(capacity));        //mAh
-  crsfBatt.remaining = (uint8_t)(voltage);   //percent
+  crsfBatt.voltage = htobe16((uint16_t)(voltage * 10.0));   //Volts
+  crsfBatt.current = htobe16((uint16_t)(current * 10.0));   //Amps
+  crsfBatt.capacity = htobe16((uint16_t)(capacity)) << 8;   //mAh (with this implemetation max capacity is 65535mAh)
+  crsfBatt.remaining = (uint8_t)(remaining);                //percent
   crsf.queuePacket(CRSF_SYNC_BYTE, CRSF_FRAMETYPE_BATTERY_SENSOR, &crsfBatt, sizeof(crsfBatt));
 }

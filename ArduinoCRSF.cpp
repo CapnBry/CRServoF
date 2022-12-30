@@ -225,12 +225,12 @@ void ArduinoCRSF::queuePacket(uint8_t addr, uint8_t type, const void *payload, u
     memcpy(&buf[3], payload, len);
     buf[len+3] = _crc.calc(&buf[2], len + 1);
     
-   // for(int i = 0; i <= len + 3; i++)
-   // {
-      // Serial.print(String(buf[i], HEX));
-      // Serial.print(" ");
-   // }
-   // Serial.println(" ");
+   for(int i = 0; i <= len + 3; i++)
+   {
+      Serial.print(String(buf[i], HEX));
+      Serial.print(" ");
+   }
+   Serial.println(" ");
    
     // Busywait until the serial port seems free
     //while (millis() - _lastReceive < 2)
