@@ -24,7 +24,8 @@ public:
     int getChannel(unsigned int ch) const { return _channels[ch - 1]; }
     const crsfLinkStatistics_t *getLinkStatistics() const { return &_linkStatistics; }
     const crsf_sensor_gps_t *getGpsSensor() const { return &_gpsSensor; }
-    const crsf_sensor_baro_vario_t *getBaroVarioSensor() const { return &_baroVarioSensor; }
+    const crsf_sensor_vario_t *getVarioSensor() const { return &_varioSensor; }
+    const crsf_sensor_baro_altitude_t *getBaroAltitudeSensor() const { return &_baroAltitudeSensor; }
     const crsf_sensor_attitude_t *getAttitudeSensor() const { return &_attitudeSensor; }
     bool isLinkUp() const { return _linkIsUp; }
 
@@ -35,7 +36,8 @@ private:
     Crc8 _crc;
     crsfLinkStatistics_t _linkStatistics;
     crsf_sensor_gps_t _gpsSensor;
-    crsf_sensor_baro_vario_t _baroVarioSensor;
+    crsf_sensor_vario_t _varioSensor;
+    crsf_sensor_baro_altitude_t _baroAltitudeSensor;
     crsf_sensor_attitude_t _attitudeSensor;
     uint32_t _baud;
     uint32_t _lastReceive;
@@ -54,6 +56,7 @@ private:
     void packetChannelsPacked(const crsf_header_t *p);
     void packetLinkStatistics(const crsf_header_t *p);
     void packetGps(const crsf_header_t *p);
-    void packetBaroVario(const crsf_header_t *p);
+    void packetVario(const crsf_header_t *p);
+    void packetBaroAltitude(const crsf_header_t *p);
     void packetAttitude(const crsf_header_t *p);
 };

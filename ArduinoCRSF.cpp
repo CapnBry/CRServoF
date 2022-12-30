@@ -107,8 +107,11 @@ void ArduinoCRSF::processPacketIn(uint8_t len)
         case CRSF_FRAMETYPE_LINK_STATISTICS:
             packetLinkStatistics(hdr);
             break;
-        case CRSF_FRAMETYPE_BARO_VARIO:
+        case CRSF_FRAMETYPE_BARO_ALTITUDE:
             packetBaroAltitude(hdr);
+            break;
+        case CRSF_FRAMETYPE_VARIO:
+            packetVario(hdr);
             break;
         }
     }
@@ -177,23 +180,25 @@ void ArduinoCRSF::packetGps(const crsf_header_t *p)
     _gpsSensor.satellites = gps->satellites;
 }
 
-void ArduinoCRSF::packetBaroVario(const crsf_header_t *p)
+void ArduinoCRSF::packetVario(const crsf_header_t *p)
 {
-    const crsf_sensor_baro_vario_t *baroVario = (crsf_sensor_baroVario_t *)p->data;
-    _baroVarioSensor.altitude = be16toh(baroVario->altitude); //TODO: Untested!
-    _baroVarioSensor.verticalspd = be16toh(baroVario->verticalspd); //TODO: Untested!
-    
-    //TODO: should this have a callback?
+    const crsf_sensor_vario_t *vario = (crsf_sensor_vario_t *)p->data;
+    _varioSensor.verticalspd = be16toh(vario->verticalspd);
+}
+
+void ArduinoCRSF::packetBaroAltitude(const crsf_header_t *p)
+{
+    const crsf_sensor_baro_altitude_t *baroAltitude = (crsf_sensor_baro_altitude_t *)p->data;
+    _baroAltitudeSensor.altitude = be16toh(baroAltitude->altitude);
+    _baroAltitudeSensor.verticalspd = be16toh(baroAltitude->verticalspd);
 }
 
 void ArduinoCRSF::packetAttitude(const crsf_header_t *p)
 {
     const crsf_sensor_attitude_t *attitude = (crsf_sensor_attitude_t *)p->data;
-    _attitudeSensor.pitch = be16toh(attitude->pitch); //TODO: Untested!
-    _attitudeSensor.roll = be16toh(attitude->roll); //TODO: Untested!
-    _attitudeSensor.yaw = be16toh(attitude->yaw); //TODO: Untested!
-    
-    //TODO: should this have a callback?
+    _attitudeSensor.pitch = be16toh(attitude->pitch);
+    _attitudeSensor.roll = be16toh(attitude->roll);
+    _attitudeSensor.yaw = be16toh(attitude->yaw);
 }
 
 void ArduinoCRSF::write(uint8_t b)
@@ -212,14 +217,21 @@ void ArduinoCRSF::queuePacket(uint8_t addr, uint8_t type, const void *payload, u
         return;
     if (len > CRSF_MAX_PACKET_LEN)
         return;
-
+   
     uint8_t buf[CRSF_MAX_PACKET_LEN+4];
     buf[0] = addr;
     buf[1] = len + 2; // type + payload + crc
     buf[2] = type;
     memcpy(&buf[3], payload, len);
     buf[len+3] = _crc.calc(&buf[2], len + 1);
-
+    
+   // for(int i = 0; i <= len + 3; i++)
+   // {
+      // Serial.print(String(buf[i], HEX));
+      // Serial.print(" ");
+   // }
+   // Serial.println(" ");
+   
     // Busywait until the serial port seems free
     //while (millis() - _lastReceive < 2)
     //    loop();

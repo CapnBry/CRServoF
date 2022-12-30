@@ -30,31 +30,33 @@ enum {
 typedef enum
 {
     CRSF_FRAMETYPE_GPS = 0x02,
-    //CRSF_FRAMETYPE_VARIO = 0x07 //no need to support
-    CRSF_FRAMETYPE_BATTERY_SENSOR = 0x08,               //has no TX function
+    CRSF_FRAMETYPE_VARIO = 0x07,
+    CRSF_FRAMETYPE_BATTERY_SENSOR = 0x08,
     CRSF_FRAMETYPE_BARO_ALTITUDE = 0x09,
+    //CRSF_FRAMETYPE_HEARTBEAT = 0x0B,                   //no need to support? (rev07)
+    //CRSF_FRAMETYPE_VIDEO_TRANSMITTER = 0x0F,           //no need to support? (rev07)
     CRSF_FRAMETYPE_LINK_STATISTICS = 0x14,
-    // CRSF_FRAMETYPE_OPENTX_SYNC = 0x10,               //not in edgeTX?
-    // CRSF_FRAMETYPE_RADIO_ID = 0x3A,
-    CRSF_FRAMETYPE_RC_CHANNELS_PACKED = 0x16,           //RX only? has no TX function
-    // CRSF_FRAMETYPE_LINK_RX_ID = 0x1C //no need to support
-    // CRSF_FRAMETYPE_LINK_TX_ID = 0x1D //no need to support
+    // CRSF_FRAMETYPE_OPENTX_SYNC = 0x10,               //not in edgeTX
+    // CRSF_FRAMETYPE_RADIO_ID = 0x3A,                  //no need to support?
+    CRSF_FRAMETYPE_RC_CHANNELS_PACKED = 0x16,
+    // CRSF_FRAMETYPE_LINK_RX_ID = 0x1C,                 //no need to support?
+    // CRSF_FRAMETYPE_LINK_TX_ID = 0x1D,                 //no need to support?
     CRSF_FRAMETYPE_ATTITUDE = 0x1E,
-    // CRSF_FRAMETYPE_FLIGHT_MODE = 0x21,
+    // CRSF_FRAMETYPE_FLIGHT_MODE = 0x21,               //no need to support?
   // Extended Header Frames, range: 0x28 to 0x96
-    // CRSF_FRAMETYPE_DEVICE_PING = 0x28,
-    // CRSF_FRAMETYPE_DEVICE_INFO = 0x29,
-    // CRSF_FRAMETYPE_PARAMETER_SETTINGS_ENTRY = 0x2B,  //not in edgeTX?
-    // CRSF_FRAMETYPE_PARAMETER_READ = 0x2C,            //not in edgeTX?
-    // CRSF_FRAMETYPE_PARAMETER_WRITE = 0x2D,           //not in edgeTX?
-    // CRSF_FRAMETYPE_COMMAND = 0x32,
-  // KISS frames                                        //not in edgeTX?
-    // CRSF_FRAMETYPE_KISS_REQ  = 0x78,
-    // CRSF_FRAMETYPE_KISS_RESP = 0x79,
-  // MSP commands                                       //not in edgeTX?
-    // CRSF_FRAMETYPE_MSP_REQ = 0x7A,   // response request using msp sequence as command
-    // CRSF_FRAMETYPE_MSP_RESP = 0x7B,  // reply with 58 byte chunked binary
-    // CRSF_FRAMETYPE_MSP_WRITE = 0x7C, // write with 8 byte chunked binary (OpenTX outbound telemetry buffer limit)
+    // CRSF_FRAMETYPE_DEVICE_PING = 0x28,               //no "flight controller" needs to know about this
+    // CRSF_FRAMETYPE_DEVICE_INFO = 0x29,               //no "flight controller" needs to know about this
+    // CRSF_FRAMETYPE_PARAMETER_SETTINGS_ENTRY = 0x2B,  //no "flight controller" needs to know about this
+    // CRSF_FRAMETYPE_PARAMETER_READ = 0x2C,            //no "flight controller" needs to know about this
+    // CRSF_FRAMETYPE_PARAMETER_WRITE = 0x2D,           //no "flight controller" needs to know about this
+    // CRSF_FRAMETYPE_COMMAND = 0x32,                   //no "flight controller" needs to know about this
+  // KISS frames
+    // CRSF_FRAMETYPE_KISS_REQ  = 0x78,                 //not in edgeTX
+    // CRSF_FRAMETYPE_KISS_RESP = 0x79,                 //not in edgeTX
+  // MSP commands
+    // CRSF_FRAMETYPE_MSP_REQ = 0x7A,                   //not in edgeTX
+    // CRSF_FRAMETYPE_MSP_RESP = 0x7B,                  //not in edgeTX
+    // CRSF_FRAMETYPE_MSP_WRITE = 0x7C,                 //not in edgeTX
   // Ardupilot frames
     // CRSF_FRAMETYPE_ARDUPILOT_RESP = 0x80,
 } crsf_frame_type_e;
@@ -118,7 +120,7 @@ typedef struct crsfPayloadLinkstatistics_s
     int8_t downlink_SNR;
 } crsfLinkStatistics_t;
 
-typedef struct crsf_sensor_battery_s //TODO: Convert these bitfields to ints?
+typedef struct crsf_sensor_battery_s
 {
     unsigned voltage : 16;  // V * 10 big endian
     unsigned current : 16;  // A * 10 big endian
@@ -136,11 +138,16 @@ typedef struct crsf_sensor_gps_s
     uint8_t satellites; // satellites
 } PACKED crsf_sensor_gps_t;
 
-typedef struct crsf_sensor_baro_vario_s
+typedef struct crsf_sensor_vario_s
+{
+    int16_t verticalspd; // Vertical speed in cm/s, BigEndian
+} PACKED crsf_sensor_vario_t;
+
+typedef struct crsf_sensor_baro_altitude_s
 {
     uint16_t altitude; // Altitude in decimeters + 10000dm, or Altitude in meters if high bit is set, BigEndian
     int16_t verticalspd;  // Vertical speed in cm/s, BigEndian
-} PACKED crsf_sensor_baro_vario_t;
+} PACKED crsf_sensor_baro_altitude_t;
 
 
 typedef struct crsf_sensor_attitude_s

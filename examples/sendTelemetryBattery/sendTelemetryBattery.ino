@@ -38,14 +38,17 @@ void loop()
   
   int snsVin = analogRead(PIN_SNS_VIN);
   float batteryVoltage = ((float)snsVin * ADC_VLT / ADC_RES) * ((RESISTOR1 + RESISTOR2) / RESISTOR2);
-  sendRxBt(batteryVoltage);
+  sendRxBt(batteryVoltage, 1.2, 100, 100);
 }
 
-static void sendRxBt(float batteryVoltage)
+static void sendRxBattery(float voltage, float current, float capacity, float remaining)
 {
-  crsf_sensor_battery_t crsfbatt = { 0 };
+  crsf_sensor_battery_t crsfBatt = { 0 };
 
   // Values are MSB first (BigEndian)
-  crsfbatt.voltage = htobe16((uint16_t)(batteryVoltage * 10));
-  crsf.queuePacket(CRSF_SYNC_BYTE, CRSF_FRAMETYPE_BATTERY_SENSOR, &crsfbatt, sizeof(crsfbatt));
+  crsfBatt.voltage = htobe16((uint16_t)(voltage * 10.0));     //Volts
+  crsfBatt.current = htobe16((uint16_t)(current * 10.0));     //Amps
+  crsfBatt.capacity = htobe16((uint16_t)(capacity));        //mAh
+  crsfBatt.remaining = (uint8_t)(voltage);   //percent
+  crsf.queuePacket(CRSF_SYNC_BYTE, CRSF_FRAMETYPE_BATTERY_SENSOR, &crsfBatt, sizeof(crsfBatt));
 }
