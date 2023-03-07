@@ -37,7 +37,7 @@ public:
 
 private:
     HardwareSerial &_port;
-    uint8_t _rxBuf[CRSF_MAX_PACKET_LEN+3];
+    uint8_t _rxBuf[CRSF_MAX_PACKET_SIZE];
     uint8_t _rxBufPos;
     Crc8 _crc;
     crsfLinkStatistics_t _linkStatistics;

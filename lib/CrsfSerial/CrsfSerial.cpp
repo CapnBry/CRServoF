@@ -82,8 +82,9 @@ void CrsfSerial::handleByteReceived()
         if (_rxBufPos > 1)
         {
             uint8_t len = _rxBuf[1];
-            // Sanity check the declared length, can't be shorter than Type, X, CRC
-            if (len < 3 || len > CRSF_MAX_PACKET_LEN)
+            // Sanity check the declared length isn't outside Type + X{1,CRSF_MAX_PAYLOAD_LEN} + CRC
+            // assumes there never will be a CRSF message that just has a type and no data (X)
+            if (len < 3 || len > (CRSF_MAX_PAYLOAD_LEN + 2))
             {
                 shiftRxBuffer(1);
                 reprocess = true;
@@ -240,10 +241,10 @@ void CrsfSerial::queuePacket(uint8_t addr, uint8_t type, const void *payload, ui
         return;
     if (_passthroughMode)
         return;
-    if (len > CRSF_MAX_PACKET_LEN)
+    if (len > CRSF_MAX_PAYLOAD_LEN)
         return;
 
-    uint8_t buf[CRSF_MAX_PACKET_LEN+4];
+    uint8_t buf[CRSF_MAX_PACKET_SIZE];
     buf[0] = addr;
     buf[1] = len + 2; // type + payload + crc
     buf[2] = type;
