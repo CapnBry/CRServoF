@@ -34,9 +34,14 @@ CrsfSerial::CrsfSerial(HardwareSerial &port, uint32_t baud) :
     _port(port), _crc(0xd5), _baud(baud),
     _lastReceive(0), _lastChannelsPacket(0), _linkIsUp(false),
     _passthroughMode(false)
+{}
+
+void CrsfSerial::begin(uint32_t baud)
 {
-    // Crsf serial is 420000 baud for V2
-    _port.begin(_baud);
+    if (baud != 0)
+        _port.begin(baud);
+    else
+        _port.begin(_baud);
 }
 
 // Call from main loop to update
@@ -257,12 +262,9 @@ void CrsfSerial::queuePacket(uint8_t addr, uint8_t type, const void *payload, ui
     write(buf, len + 4);
 }
 
-void CrsfSerial::setPassthroughMode(bool val, unsigned int baud)
+void CrsfSerial::setPassthroughMode(bool val, uint32_t baud)
 {
     _passthroughMode = val;
     _port.flush();
-    if (baud != 0)
-        _port.begin(baud);
-    else
-        _port.begin(_baud);
+    begin(baud);
 }

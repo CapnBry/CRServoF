@@ -20,8 +20,7 @@ void setup()
 {
     Serial.begin(115200);
 
-    // If something other than changing the baud of the UART needs to be done, do it here
-    // Serial1.end(); Serial1.begin(500000, SERIAL_8N1, 16, 17);
+    crsf.begin();
 
     // Attach the channels callback
     crsf.onPacketChannels = &packetChannels;

@@ -14,6 +14,7 @@ public:
     static const unsigned int CRSF_FAILSAFE_STAGE1_MS = 300;
 
     CrsfSerial(HardwareSerial &port, uint32_t baud = CRSF_BAUDRATE);
+    void begin(uint32_t baud = 0);
     void loop();
     void write(uint8_t b);
     void write(const uint8_t *buf, size_t len);
@@ -25,7 +26,7 @@ public:
     const crsf_sensor_gps_t *getGpsSensor() const { return &_gpsSensor; }
     bool isLinkUp() const { return _linkIsUp; }
     bool getPassthroughMode() const { return _passthroughMode; }
-    void setPassthroughMode(bool val, unsigned int baud = 0);
+    void setPassthroughMode(bool val, uint32_t baud = 0);
 
     // Event Handlers
     void (*onLinkUp)();

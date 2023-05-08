@@ -256,6 +256,7 @@ static void checkSerialIn()
 
 static void setupCrsf()
 {
+    crsf.begin();
     crsf.onLinkUp = &crsfLinkUp;
     crsf.onLinkDown = &crsfLinkDown;
     crsf.onShiftyByte = &crsfShiftyByte;
