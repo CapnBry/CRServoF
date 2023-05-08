@@ -33,7 +33,7 @@
 CrsfSerial::CrsfSerial(HardwareSerial &port, uint32_t baud) :
     _port(port), _crc(0xd5), _baud(baud),
     _lastReceive(0), _lastChannelsPacket(0), _linkIsUp(false),
-    _passthroughMode(false)
+    _passthroughBaud(0)
 {}
 
 void CrsfSerial::begin(uint32_t baud)
@@ -57,7 +57,7 @@ void CrsfSerial::handleSerialIn()
         uint8_t b = _port.read();
         _lastReceive = millis();
 
-        if (_passthroughMode)
+        if (getPassthroughMode())
         {
             if (onShiftyByte)
                 onShiftyByte(b);
@@ -242,9 +242,7 @@ void CrsfSerial::write(const uint8_t *buf, size_t len)
 
 void CrsfSerial::queuePacket(uint8_t addr, uint8_t type, const void *payload, uint8_t len)
 {
-    if (!_linkIsUp)
-        return;
-    if (_passthroughMode)
+    if (getPassthroughMode())
         return;
     if (len > CRSF_MAX_PAYLOAD_LEN)
         return;
@@ -256,15 +254,50 @@ void CrsfSerial::queuePacket(uint8_t addr, uint8_t type, const void *payload, ui
     memcpy(&buf[3], payload, len);
     buf[len+3] = _crc.calc(&buf[2], len + 1);
 
-    // Busywait until the serial port seems free
-    //while (millis() - _lastReceive < 2)
-    //    loop();
     write(buf, len + 4);
 }
 
-void CrsfSerial::setPassthroughMode(bool val, uint32_t baud)
+/**
+ * @brief   Enter passthrough mode (serial sent directly to shiftybyte),
+ *          optionally changing the baud rate used during passthrough mode
+ * @param val
+ *          True to start passthrough mode, false to resume processing CRSF
+ * @param passthroughBaud
+ *          New baud rate for passthrough mode, or 0 to not change baud
+ *          Not used if disabling passthough
+*/
+void CrsfSerial::setPassthroughMode(bool val, uint32_t passthroughBaud)
 {
-    _passthroughMode = val;
-    _port.flush();
-    begin(baud);
+    if (val)
+    {
+        // If not requesting any baud change
+        if (passthroughBaud == 0)
+        {
+            // Enter passthrough mode if not yet
+            if (_passthroughBaud == 0)
+                _passthroughBaud = _baud;
+            return;
+        }
+
+        _passthroughBaud = passthroughBaud;
+    }
+    else
+    {
+        // Not in passthrough, can't leave it any harder than we already are
+        if (_passthroughBaud == 0)
+            return;
+
+        // Leaving passthrough, but going back to same baud, just disable
+        if (_passthroughBaud == _baud)
+        {
+            _passthroughBaud = 0;
+            return;
+        }
+
+        _passthroughBaud = 0;
+    }
+
+    // Can only get here if baud is changing, close and reopen the port
+    _port.end(); // assumes flush()
+    begin(_passthroughBaud);
 }

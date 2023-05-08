@@ -141,6 +141,24 @@ static void checkVbatt()
     //Serial.print(" "); Serial.print(g_State.vbatValue, DEC); Serial.println("V");
 }
 
+static void passthroughBegin(uint32_t baud)
+{
+    if (baud != crsf.getBaud())
+    {
+        // Force a reboot command since we want to send the reboot
+        // at 420000 then switch to what the user wanted
+        const uint8_t rebootpayload[] = { 'b', 'l' };
+        crsf.queuePacket(CRSF_ADDRESS_CRSF_RECEIVER, CRSF_FRAMETYPE_COMMAND, &rebootpayload, sizeof(rebootpayload));
+    }
+
+    crsf.setPassthroughMode(true, baud);
+    g_State.serialEcho = false;
+}
+
+/***
+ * @brief Processes a text command like we're some sort of CLI or something
+ * @return true if CrsfSerial was placed into passthrough mode, false otherwise
+*/
 static bool handleSerialCommand(char *cmd)
 {
     // Fake a CRSF RX on UART6
@@ -165,16 +183,14 @@ static bool handleSerialCommand(char *cmd)
 
     else if (strncmp(cmd, "serialpassthrough 5 ", 20) == 0)
     {
-        Serial.println("Passthrough serial 5");
-        // Force a reboot command since we want to send the reboot
-        // at 420000 then switch to what the user wanted
-        const uint8_t rebootcmd[] = { 0xEC,0x04,0x32,0x62,0x6c,0x0A };
-        crsf.write(rebootcmd, sizeof(rebootcmd));
+        // Just echo the command back, BF and iNav both send
+        // difference blocks of text as they start passthrough
+        Serial.println(cmd);
 
-        unsigned int baud = atoi(cmd+20);
-        crsf.setPassthroughMode(true, baud);
-        g_State.serialEcho = false;
-        return false;
+        unsigned int baud = atoi(&cmd[20]);
+        passthroughBegin(baud);
+
+        return true;
     }
 
     else
@@ -183,7 +199,7 @@ static bool handleSerialCommand(char *cmd)
     if (prompt)
         Serial.print("# ");
 
-    return true;
+    return false;
 }
 
 static void checkSerialInPassthrough()
@@ -207,11 +223,18 @@ static void checkSerialInPassthrough()
     // If longer than X seconds since last data, switch out of passthrough
     if (gotData || !lastData)
         lastData = millis();
-    else if (millis() - lastData > 3000)
+    // Turn off LED 1s after last data
+    else if (LED && (millis() - lastData > 1000))
+    {
+        LED = false;
+        digitalWrite(DPIN_LED, LOW ^ LED_INVERTED);
+    }
+    // Short blink LED after timeout
+    else if (millis() - lastData > 5000)
     {
         lastData = 0;
         digitalWrite(DPIN_LED, HIGH ^ LED_INVERTED);
-        delay(250);
+        delay(200);
         digitalWrite(DPIN_LED, LOW ^ LED_INVERTED);
         crsf.setPassthroughMode(false);
     }
@@ -230,10 +253,14 @@ static void checkSerialInNormal()
             if (g_State.serialInBuffLen != 0)
             {
                 Serial.write('\n');
-                Serial.flush();
+
                 g_State.serialInBuff[g_State.serialInBuffLen] = '\0';
-                handleSerialCommand(g_State.serialInBuff);
                 g_State.serialInBuffLen = 0;
+
+                bool goToPassthrough = handleSerialCommand(g_State.serialInBuff);
+                // If need to go to passthrough, get outta here before we dequeue any bytes
+                if (goToPassthrough)
+                    return;
             }
         }
         else

@@ -20,13 +20,14 @@ public:
     void write(const uint8_t *buf, size_t len);
     void queuePacket(uint8_t addr, uint8_t type, const void *payload, uint8_t len);
 
+    uint32_t getBaud() const { return _baud; };
     // Return current channel value (1-based) in us
     int getChannel(unsigned int ch) const { return _channels[ch - 1]; }
     const crsfLinkStatistics_t *getLinkStatistics() const { return &_linkStatistics; }
     const crsf_sensor_gps_t *getGpsSensor() const { return &_gpsSensor; }
     bool isLinkUp() const { return _linkIsUp; }
-    bool getPassthroughMode() const { return _passthroughMode; }
-    void setPassthroughMode(bool val, uint32_t baud = 0);
+    bool getPassthroughMode() const { return _passthroughBaud != 0; }
+    void setPassthroughMode(bool val, uint32_t passthroughBaud = 0);
 
     // Event Handlers
     void (*onLinkUp)();
@@ -47,7 +48,7 @@ private:
     uint32_t _lastReceive;
     uint32_t _lastChannelsPacket;
     bool _linkIsUp;
-    bool _passthroughMode;
+    uint32_t _passthroughBaud;
     int _channels[CRSF_NUM_CHANNELS];
 
     void handleSerialIn();
