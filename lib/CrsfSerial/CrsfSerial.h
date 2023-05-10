@@ -33,7 +33,7 @@ public:
     void (*onLinkUp)();
     void (*onLinkDown)();
     void (*onPacketChannels)();
-    void (*onShiftyByte)(uint8_t b);
+    void (*onOobData)(uint8_t b);
     void (*onPacketLinkStatistics)(crsfLinkStatistics_t *ls);
     void (*onPacketGps)(crsf_sensor_gps_t *gpsSensor);
 

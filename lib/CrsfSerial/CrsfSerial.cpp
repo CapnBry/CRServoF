@@ -59,8 +59,8 @@ void CrsfSerial::handleSerialIn()
 
         if (getPassthroughMode())
         {
-            if (onShiftyByte)
-                onShiftyByte(b);
+            if (onOobData)
+                onOobData(b);
             continue;
         }
 
@@ -163,8 +163,8 @@ void CrsfSerial::shiftRxBuffer(uint8_t cnt)
         return;
     }
 
-    if (cnt == 1 && onShiftyByte)
-        onShiftyByte(_rxBuf[0]);
+    if (cnt == 1 && onOobData)
+        onOobData(_rxBuf[0]);
 
     // Otherwise do the slow shift down
     uint8_t *src = &_rxBuf[cnt];

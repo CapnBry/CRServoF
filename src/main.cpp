@@ -38,7 +38,7 @@ static struct tagConnectionState {
     bool serialEcho;
 } g_State;
 
-static void crsfShiftyByte(uint8_t b)
+static void crsfOobData(uint8_t b)
 {
     // A shifty byte is usually just log messages from ELRS
     Serial.write(b);
@@ -283,13 +283,12 @@ static void checkSerialIn()
 
 static void setupCrsf()
 {
-    crsf.begin();
     crsf.onLinkUp = &crsfLinkUp;
     crsf.onLinkDown = &crsfLinkDown;
-    crsf.onShiftyByte = &crsfShiftyByte;
+    crsf.onOobData = &crsfOobData;
     crsf.onPacketChannels = &packetChannels;
     crsf.onPacketLinkStatistics = &packetLinkStatistics;
-    //crsf.setPassthroughMode(true);
+    crsf.begin();
 }
 
 static void setupGpio()
