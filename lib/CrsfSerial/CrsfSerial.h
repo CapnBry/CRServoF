@@ -32,8 +32,10 @@ public:
     // Event Handlers
     void (*onLinkUp)();
     void (*onLinkDown)();
-    void (*onPacketChannels)();
+    // OobData is any byte which is not CRSF, including passthrough
     void (*onOobData)(uint8_t b);
+    // CRSF Packet Callbacks
+    void (*onPacketChannels)();
     void (*onPacketLinkStatistics)(crsfLinkStatistics_t *ls);
     void (*onPacketGps)(crsf_sensor_gps_t *gpsSensor);
 
