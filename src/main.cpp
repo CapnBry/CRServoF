@@ -64,8 +64,32 @@ static void servoSetUs(unsigned int servo, int usec)
     g_OutputsUs[servo] = usec;
 }
 
+
+static void outputFailsafeValues()
+ {
+    for (unsigned int out=0; out<NUM_OUTPUTS; ++out)
+        {
+            if (OUTPUT_FAILSAFE[out] == fsaNoPulses)
+                servoSetUs(out, 0);
+            else if (OUTPUT_FAILSAFE[out] != fsaHold)
+                servoSetUs(out, OUTPUT_FAILSAFE[out]);
+            // else fsaHold does nothing, keep the same value
+        }
+}
+
+
 static void packetChannels()
 {
+
+    #if defined(ARMSWITCH)
+        if (crsf.getChannel(5) < 2000)
+        {
+            outputFailsafeValues();
+            return;
+        }
+    #endif
+
+
     for (unsigned int out=0; out<NUM_OUTPUTS; ++out)
     {
         const int chInput = OUTPUT_MAP[out];
@@ -106,16 +130,7 @@ static void crsfLinkUp()
 static void crsfLinkDown()
 {
     digitalWrite(DPIN_LED, LOW ^ LED_INVERTED);
-
-    // Perform the failsafe action
-    for (unsigned int out=0; out<NUM_OUTPUTS; ++out)
-    {
-        if (OUTPUT_FAILSAFE[out] == fsaNoPulses)
-            servoSetUs(out, 0);
-        else if (OUTPUT_FAILSAFE[out] != fsaHold)
-            servoSetUs(out, OUTPUT_FAILSAFE[out]);
-        // else fsaHold does nothing, keep the same value
-    }
+    outputFailsafeValues();
  }
 
 static void checkVbatt()
