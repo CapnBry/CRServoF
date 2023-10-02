@@ -78,14 +78,31 @@ static void outputFailsafeValues()
 }
 
 
+#if defined(ARMSWITCH)
+    short armCount = 0;
+#endif
+
 static void packetChannels()
 {
-
     #if defined(ARMSWITCH)
-        if (crsf.getChannel(5) < 2000)
+        // If channel 5 doesn't send "arm" signal (value 2000), output failsafe only
+        if (crsf.getChannel(5) != 2000)
         {
             outputFailsafeValues();
+            armCount = 0;
             return;
+        } 
+        else
+        {
+            // Require at least 4 packets with "arm" signal, in order to
+            // prevent accidental arming due to corrupt signals, similar
+            // to Betaflight
+            if (armCount < 4)
+            {
+                outputFailsafeValues();
+                armCount++;
+                return;
+            }
         }
     #endif
 
