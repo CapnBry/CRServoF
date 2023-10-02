@@ -11,7 +11,7 @@
 constexpr int OUTPUT_MAP[NUM_OUTPUTS] = { 1, 2, 3, 4, 6, 7, 8, 12 };
 // The failsafe action for each channel (fsaNoPulses, fsaHold, or microseconds)
 constexpr int OUTPUT_FAILSAFE[NUM_OUTPUTS] = {
-    1500, 1500, 988, 1500,                  // ch1-ch4
+    1500, 1500, 1500, 1500,                  // ch1-ch4
     fsaHold, fsaHold, fsaHold, fsaNoPulses  // ch5-ch8
     };
 // Define the pins used to output servo PWM, must use hardware PWM,
