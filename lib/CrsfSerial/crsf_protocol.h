@@ -2,7 +2,9 @@
 
 #include <stdint.h>
 
+#if !defined(PACKED)
 #define PACKED __attribute__((packed))
+#endif
 
 #define CRSF_BAUDRATE           420000
 #define CRSF_NUM_CHANNELS 16
@@ -12,6 +14,8 @@
 #define CRSF_CHANNEL_VALUE_2000 1792
 #define CRSF_CHANNEL_VALUE_MAX  1811 // 2012us - actual CRSF max is 1984 with E.Limits on
 #define CRSF_CHANNEL_VALUE_SPAN (CRSF_CHANNEL_VALUE_MAX - CRSF_CHANNEL_VALUE_MIN)
+#define CRSF_ELIMIT_US_MIN         891   // microseconds for CRSF=0 (E.Limits=ON)
+#define CRSF_ELIMIT_US_MAX         2119  // microseconds for CRSF=1984
 #define CRSF_MAX_PACKET_SIZE 64 // max declared len is 62+DEST+LEN on top of that = 64
 #define CRSF_MAX_PAYLOAD_LEN (CRSF_MAX_PACKET_SIZE - 4) // Max size of payload in [dest] [len] [type] [payload] [crc8]
 

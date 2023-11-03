@@ -21,6 +21,15 @@
     #define USART_INPUT     USART1  // UART1 RX=PA10 TX=PA9
     #define OUTPUT_PIN_MAP  PA_3, PA_2, PA_1, PA_0, PB_0, PB_1, PA_6, PA_7 // TIM2 CH1-4, TIM3CH1-4  PA_6=MIO PA_7=MOS
 
+#elif defined(TARGET_RASPBERRY_PI_PICO)
+    #define DPIN_LED        25
+    #define LED_INVERTED    0
+    //#define APIN_VBAT       26
+    //#define USART_INPUT     Serial2
+    #define DPIN_CRSF_RX    p5
+    #define DPIN_CRSF_TX    p4
+    #define OUTPUT_PIN_MAP  p10, p11, p12, p13, p14, p15, p16, p17
+
 #endif
 
 #if !defined(LED_INVERTED)
