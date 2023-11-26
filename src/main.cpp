@@ -30,9 +30,17 @@ constexpr PinName OUTPUT_PINS[NUM_OUTPUTS] = { OUTPUT_PIN_MAP };
 #define CRSF_ELRS_ARM_CHANNEL 5
 
 // Local Variables
+#if defined(ARDUINO_ARCH_STM32)
 static HardwareSerial CrsfSerialStream(USART_INPUT);
+#elif defined(TARGET_RASPBERRY_PI_PICO)
+static UART CrsfSerialStream(DPIN_CRSF_TX, DPIN_CRSF_RX);
+#endif
 static CrsfSerial crsf(CrsfSerialStream);
 static int g_OutputsUs[NUM_OUTPUTS];
+#if defined(TARGET_RASPBERRY_PI_PICO)
+#include <Servo.h>
+static Servo *g_Servos[NUM_OUTPUTS];
+#endif
 static struct tagConnectionState {
     uint32_t lastVbatRead;
     MedianAvgFilter<unsigned int, VBAT_SMOOTH>vbatSmooth;
@@ -49,22 +57,70 @@ static void crsfOobData(uint8_t b)
     Serial.write(b);
 }
 
+/**
+ * @brief: Initialize a servo pin output for the first time
+*/
+static void servoPlatformBegin(unsigned int servo)
+{
+#if defined(ARDUINO_ARCH_STM32)
+    // vv pinMode(p, OUTPUT) vv
+    pin_function(OUTPUT_PINS[servo], STM_PIN_DATA(STM_MODE_OUTPUT_PP, GPIO_NOPULL, 0));
+#endif
+#if defined(TARGET_RASPBERRY_PI_PICO)
+    // Pi Pico waits for the value before attaching the servo
+    Servo *s = new Servo();
+    s->attach(OUTPUT_PINS[servo], CRSF_ELIMIT_US_MIN, CRSF_ELIMIT_US_MAX);
+    g_Servos[servo] = s;
+#endif
+}
+
+/**
+ * @brief: Set an already initialized servo to a usec value
+*/
+static void servoPlatformSet(unsigned int servo, int usec)
+{
+#if defined(ARDUINO_ARCH_STM32)
+    pwm_start(OUTPUT_PINS[servo], PWM_FREQ_HZ, usec, MICROSEC_COMPARE_FORMAT);
+#endif
+#if defined(TARGET_RASPBERRY_PI_PICO)
+    if (g_Servos[servo] == nullptr)
+    {
+        Servo *s = new Servo();
+        s->attach(OUTPUT_PINS[servo], CRSF_ELIMIT_US_MIN, CRSF_ELIMIT_US_MAX, usec);
+        g_Servos[servo] = s;
+    }
+    else
+        g_Servos[servo]->writeMicroseconds(usec);
+#endif
+}
+
+static void servoPlatformEnd(unsigned int servo)
+{
+#if defined(PLATFORM_STM32)
+    pwm_stop(OUTPUT_PINS[servo]);
+    // vv pinMode(p, INPUT_PULLDOWN) vv
+    pin_function(OUTPUT_PINS[servo], STM_PIN_DATA(STM_MODE_INPUT, GPIO_PULLDOWN, 0));
+#endif
+#if defined(TARGET_RASPBERRY_PI_PICO)
+     Servo *s = g_Servos[servo];
+     g_Servos[servo] = nullptr;
+     s->detach();
+     delete s;
+#endif
+}
+
 static void servoSetUs(unsigned int servo, int usec)
 {
     if (usec > 0)
     {
         // 0 means it was disabled previously, enable OUTPUT mode
         if (g_OutputsUs[servo] == 0)
-            // vv pinMode(p, OUTPUT) vv
-            pin_function(OUTPUT_PINS[servo], STM_PIN_DATA(STM_MODE_OUTPUT_PP, GPIO_NOPULL, 0));
-        pwm_start(OUTPUT_PINS[servo], PWM_FREQ_HZ, usec, MICROSEC_COMPARE_FORMAT);
+            servoPlatformBegin(servo);
+        servoPlatformSet(servo, usec);
     }
     else
     {
-        pwm_stop(OUTPUT_PINS[servo]);
-        // vv pinMode(p, INPUT_PULLDOWN) vv
-        pin_function(OUTPUT_PINS[servo], STM_PIN_DATA(STM_MODE_INPUT, GPIO_PULLDOWN, 0));
-
+        servoPlatformEnd(servo);
     }
     g_OutputsUs[servo] = usec;
 }
@@ -135,7 +191,7 @@ static void packetChannels()
         servoSetUs(out, usOutput);
     }
 
-    // for (unsigned int ch=0; ch<4; ++ch)
+    // for (unsigned int ch=1; ch<=4; ++ch)
     // {
     //     Serial.write(ch < 10 ? '0' + ch : 'A' + ch - 10);
     //     Serial.write('=');
@@ -164,6 +220,7 @@ static void crsfLinkDown()
 
 static void checkVbatt()
 {
+#if defined(APIN_VBAT)
     if (millis() - g_State.lastVbatRead < (VBAT_INTERVAL / VBAT_SMOOTH))
         return;
     g_State.lastVbatRead = millis();
@@ -183,6 +240,7 @@ static void checkVbatt()
 
     //Serial.print("ADC="); Serial.print(adc, DEC);
     //Serial.print(" "); Serial.print(g_State.vbatValue, DEC); Serial.println("V");
+#endif // APIN_VBAT
 }
 
 static void passthroughBegin(uint32_t baud)
