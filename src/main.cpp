@@ -105,6 +105,7 @@ static void outputFailsafeValues()
             armCount++;
             return false;
         }
+        return true;
     }
 #endif
 
