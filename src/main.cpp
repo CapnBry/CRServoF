@@ -144,7 +144,7 @@ static void outputFailsafeValues()
     // checks if the arm signal was sent on channel defined by CRSF_ELRS_ARM_CHANNEL.
     // The arm signal has to be value 2000
     static bool isMotorArmed()
-    	{
+    {
     	// Static variable to store arm count, initialized to 0
         static uint8_t armCount = 0;
         
