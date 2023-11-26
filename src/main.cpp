@@ -24,6 +24,11 @@ constexpr PinName OUTPUT_PINS[NUM_OUTPUTS] = { OUTPUT_PIN_MAP };
 // Scale used to calibrate or change to CRSF standard 0.1 scale
 #define VBAT_SCALE      1.0
 
+// Optimal safety and performance: Arm switch on AUX1 (channel 5)
+// It is not recommended to change the channel
+// See https://www.expresslrs.org/software/switch-config/
+#define CRSF_ELRS_ARM_CHANNEL 5
+
 // Local Variables
 static HardwareSerial CrsfSerialStream(USART_INPUT);
 static CrsfSerial crsf(CrsfSerialStream);
@@ -78,35 +83,41 @@ static void outputFailsafeValues()
 }
 
 
-#if defined(ARMSWITCH)
-    short armCount = 0;
+#if defined(USE_ARMSWITCH)
+    // If USE_ARMSWITCH flag is given during compilation, isMotorArmed
+    // checks if the arm signal was sent on channel defined by CRSF_ELRS_ARM_CHANNEL.
+    // The arm signal has to be value 2000
+    static bool isMotorArmed()
+    	{
+    	// Static variable to store arm count, initialized to 0
+        static uint8_t armCount = 0;
+        
+        if (crsf.getChannel(CRSF_ELRS_ARM_CHANNEL) != 2000)
+        {
+            armCount = 0;
+            return false;
+        } 
+	    // Require at least 4 packets with "arm" signal, in order to
+	    // prevent accidental arming due to corrupt signals, similar
+	    // to Betaflight
+	    if (armCount < 4)
+	    {
+            armCount++;
+            return false;
+        }
+    }
 #endif
 
 static void packetChannels()
 {
-    #if defined(ARMSWITCH)
-        // If channel 5 doesn't send "arm" signal (value 2000), output failsafe only
-        if (crsf.getChannel(5) != 2000)
-        {
-            outputFailsafeValues();
-            armCount = 0;
-            return;
-        } 
-        else
-        {
-            // Require at least 4 packets with "arm" signal, in order to
-            // prevent accidental arming due to corrupt signals, similar
-            // to Betaflight
-            if (armCount < 4)
-            {
-                outputFailsafeValues();
-                armCount++;
-                return;
-            }
-        }
+    #if defined(USE_ARMSWITCH)
+    if (!isMotorArmed())
+    {
+    	outputFailsafeValues();
+    	return;
+    }
     #endif
-
-
+     	
     for (unsigned int out=0; out<NUM_OUTPUTS; ++out)
     {
         const int chInput = OUTPUT_MAP[out];
