@@ -27,7 +27,8 @@ constexpr PinName OUTPUT_PINS[NUM_OUTPUTS] = { OUTPUT_PIN_MAP };
 // Optimal safety and performance: Arm switch on AUX1 (channel 5)
 // It is not recommended to change the channel
 // See https://www.expresslrs.org/software/switch-config/
-#define CRSF_ELRS_ARM_CHANNEL 5
+// Only used if USE_ARMSWITCH defined
+#define ELRS_ARM_CHANNEL 5
 
 // Local Variables
 #if defined(ARDUINO_ARCH_STM32)
@@ -129,52 +130,52 @@ static void servoSetUs(unsigned int servo, int usec)
 static void outputFailsafeValues()
  {
     for (unsigned int out=0; out<NUM_OUTPUTS; ++out)
-        {
-            if (OUTPUT_FAILSAFE[out] == fsaNoPulses)
-                servoSetUs(out, 0);
-            else if (OUTPUT_FAILSAFE[out] != fsaHold)
-                servoSetUs(out, OUTPUT_FAILSAFE[out]);
-            // else fsaHold does nothing, keep the same value
-        }
+    {
+        if (OUTPUT_FAILSAFE[out] == fsaNoPulses)
+            servoSetUs(out, 0);
+        else if (OUTPUT_FAILSAFE[out] != fsaHold)
+            servoSetUs(out, OUTPUT_FAILSAFE[out]);
+        // else fsaHold does nothing, keep the same value
+    }
 }
 
 
 #if defined(USE_ARMSWITCH)
-    // If USE_ARMSWITCH flag is given during compilation, isMotorArmed
-    // checks if the arm signal was sent on channel defined by CRSF_ELRS_ARM_CHANNEL.
-    // The arm signal has to be value 2000
-    static bool isMotorArmed()
+// If USE_ARMSWITCH flag is given during compilation, isArmed
+// checks if the arm signal was sent on channel defined by CRSF_ELRS_ARM_CHANNEL.
+// The arm signal has to be *over* 1500us
+static bool isArmed()
+{
+    // Static variable to store arm count, initialized to 0
+    static uint8_t armCount = 0;
+
+    if (crsf.getChannel(ELRS_ARM_CHANNEL) <= 1500)
     {
-    	// Static variable to store arm count, initialized to 0
-        static uint8_t armCount = 0;
-        
-        if (crsf.getChannel(CRSF_ELRS_ARM_CHANNEL) != 2000)
-        {
-            armCount = 0;
-            return false;
-        } 
-	    // Require at least 4 packets with "arm" signal, in order to
-	    // prevent accidental arming due to corrupt signals, similar
-	    // to Betaflight
-	    if (armCount < 4)
-	    {
-            armCount++;
-            return false;
-        }
-        return true;
+        armCount = 0;
+        return false;
     }
+    // Require at least 4 packets with "arm" signal, in order to
+    // prevent accidental arming due to corrupt signals, similar
+    // to Betaflight
+    if (armCount < 4)
+    {
+        armCount++;
+        return false;
+    }
+    return true;
+}
 #endif
 
 static void packetChannels()
 {
-    #if defined(USE_ARMSWITCH)
-    if (!isMotorArmed())
+#if defined(USE_ARMSWITCH)
+    if (!isArmed())
     {
-    	outputFailsafeValues();
-    	return;
+        outputFailsafeValues();
+        return;
     }
-    #endif
-     	
+#endif
+
     for (unsigned int out=0; out<NUM_OUTPUTS; ++out)
     {
         const int chInput = OUTPUT_MAP[out];

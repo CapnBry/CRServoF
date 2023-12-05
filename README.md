@@ -22,7 +22,7 @@ The code has failsafe detection which happens if no channel packets are received
 
 ### Arming / Disarming
 
-CRServoF includes an optional feature to require an arming signal for other channels to be processed. To use this feature, include the buildflag `USE_ARMSWITCH`. CRServoF expects a value of 2000 on CH5 to arm and any other value to disarm. If disarmed, the failsafe values mentioned above will be sent, make sure that you use the correct values applicable to your use case.
+CRServoF includes an optional feature to require an arming signal for other channels to be processed. To use this feature, include the buildflag `USE_ARMSWITCH`. CRServoF expects a "high" value (>1500us) on CH5 to arm. If disarmed, the failsafe values mentioned above will be sent, make sure that you use the correct values applicable to your use case.
 
 ### VBAT
 
