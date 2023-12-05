@@ -24,6 +24,12 @@ constexpr PinName OUTPUT_PINS[NUM_OUTPUTS] = { OUTPUT_PIN_MAP };
 // Scale used to calibrate or change to CRSF standard 0.1 scale
 #define VBAT_SCALE      1.0
 
+// Optimal safety and performance: Arm switch on AUX1 (channel 5)
+// It is not recommended to change the channel
+// See https://www.expresslrs.org/software/switch-config/
+// Only used if USE_ARMSWITCH defined
+#define ELRS_ARM_CHANNEL 5
+
 // Local Variables
 #if defined(ARDUINO_ARCH_STM32)
 static HardwareSerial CrsfSerialStream(USART_INPUT);
@@ -120,8 +126,56 @@ static void servoSetUs(unsigned int servo, int usec)
     g_OutputsUs[servo] = usec;
 }
 
+
+static void outputFailsafeValues()
+ {
+    for (unsigned int out=0; out<NUM_OUTPUTS; ++out)
+    {
+        if (OUTPUT_FAILSAFE[out] == fsaNoPulses)
+            servoSetUs(out, 0);
+        else if (OUTPUT_FAILSAFE[out] != fsaHold)
+            servoSetUs(out, OUTPUT_FAILSAFE[out]);
+        // else fsaHold does nothing, keep the same value
+    }
+}
+
+
+#if defined(USE_ARMSWITCH)
+// If USE_ARMSWITCH flag is given during compilation, isArmed
+// checks if the arm signal was sent on channel defined by CRSF_ELRS_ARM_CHANNEL.
+// The arm signal has to be *over* 1500us
+static bool isArmed()
+{
+    // Static variable to store arm count, initialized to 0
+    static uint8_t armCount = 0;
+
+    if (crsf.getChannel(ELRS_ARM_CHANNEL) <= 1500)
+    {
+        armCount = 0;
+        return false;
+    }
+    // Require at least 4 packets with "arm" signal, in order to
+    // prevent accidental arming due to corrupt signals, similar
+    // to Betaflight
+    if (armCount < 4)
+    {
+        armCount++;
+        return false;
+    }
+    return true;
+}
+#endif
+
 static void packetChannels()
 {
+#if defined(USE_ARMSWITCH)
+    if (!isArmed())
+    {
+        outputFailsafeValues();
+        return;
+    }
+#endif
+
     for (unsigned int out=0; out<NUM_OUTPUTS; ++out)
     {
         const int chInput = OUTPUT_MAP[out];
@@ -162,16 +216,7 @@ static void crsfLinkUp()
 static void crsfLinkDown()
 {
     digitalWrite(DPIN_LED, LOW ^ LED_INVERTED);
-
-    // Perform the failsafe action
-    for (unsigned int out=0; out<NUM_OUTPUTS; ++out)
-    {
-        if (OUTPUT_FAILSAFE[out] == fsaNoPulses)
-            servoSetUs(out, 0);
-        else if (OUTPUT_FAILSAFE[out] != fsaHold)
-            servoSetUs(out, OUTPUT_FAILSAFE[out]);
-        // else fsaHold does nothing, keep the same value
-    }
+    outputFailsafeValues();
  }
 
 static void checkVbatt()
