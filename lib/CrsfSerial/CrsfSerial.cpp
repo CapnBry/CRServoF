@@ -174,26 +174,24 @@ void CrsfSerial::shiftRxBuffer(uint8_t cnt)
 
 void CrsfSerial::packetChannelsPacked(const crsf_header_t *p)
 {
-    crsf_channels_t *ch = (crsf_channels_t *)&p->data;
-    _channels[0] = ch->ch0;
-    _channels[1] = ch->ch1;
-    _channels[2] = ch->ch2;
-    _channels[3] = ch->ch3;
-    _channels[4] = ch->ch4;
-    _channels[5] = ch->ch5;
-    _channels[6] = ch->ch6;
-    _channels[7] = ch->ch7;
-    _channels[8] = ch->ch8;
-    _channels[9] = ch->ch9;
-    _channels[10] = ch->ch10;
-    _channels[11] = ch->ch11;
-    _channels[12] = ch->ch12;
-    _channels[13] = ch->ch13;
-    _channels[14] = ch->ch14;
-    _channels[15] = ch->ch15;
+    // Unpack CRSF channel data stored bytewise 11 bits / channel
+    // Code assumes there is enough payload for all the channels
+    constexpr unsigned inputMask = (1 << CRSF_BITS_PER_CHANNEL) - 1;
+    const uint8_t *buf = p->data;
+    unsigned scratch = 0; 
+    unsigned bitsInScratch = 0;
+    for (unsigned ch=0; ch<CRSF_NUM_CHANNELS; ++ch)
+    {
+        while (bitsInScratch < CRSF_BITS_PER_CHANNEL)
+        {
+            scratch |= (*buf++) << bitsInScratch;
+            bitsInScratch += 8;
+        }
 
-    for (unsigned int i=0; i<CRSF_NUM_CHANNELS; ++i)
-        _channels[i] = map(_channels[i], CRSF_CHANNEL_VALUE_1000, CRSF_CHANNEL_VALUE_2000, 1000, 2000);
+        _channels[ch] = CRSF_to_US(scratch & inputMask);
+        scratch >>= CRSF_BITS_PER_CHANNEL;
+        bitsInScratch -= CRSF_BITS_PER_CHANNEL;
+    }
 
     if (!_linkIsUp && onLinkUp)
         onLinkUp();

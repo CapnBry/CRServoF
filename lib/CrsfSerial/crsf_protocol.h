@@ -141,9 +141,9 @@ typedef struct crsf_sensor_gps_s
 } PACKED crsf_sensor_gps_t;
 
 // crsf = (us - 1500) * 8/5 + 992
-#define US_to_CRSF(us)      (us * 8 / 5 + (CRSF_CHANNEL_VALUE_MID - 2400))
+#define US_to_CRSF(us)      ((us) * 8 / 5 + (CRSF_CHANNEL_VALUE_MID - 2400))
 // us = (crsf - 992) * 5/8 + 1500
-#define CRSF_to_US(crsf)    (crsf * 5 / 8 + (1500 - 620))
+#define CRSF_to_US(crsf)    ((crsf) * 5 / 8 + (1500 - 620))
 
 #if !defined(__linux__)
 static inline uint16_t htobe16(uint16_t val)
