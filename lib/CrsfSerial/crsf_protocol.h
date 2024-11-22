@@ -6,7 +6,7 @@
 #define PACKED __attribute__((packed))
 #endif
 
-#define CRSF_BAUDRATE           420000
+#define CRSF_BAUDRATE           420000  // for receiverd only
 #define CRSF_NUM_CHANNELS 16
 #define CRSF_CHANNEL_VALUE_MIN  172 // 987us - actual CRSF min is 0 with E.Limits on
 #define CRSF_CHANNEL_VALUE_1000 191
@@ -18,8 +18,8 @@
 #define CRSF_ELIMIT_US_MAX         2119  // microseconds for CRSF=1984
 #define CRSF_MAX_PACKET_SIZE 64 // max declared len is 62+DEST+LEN on top of that = 64
 #define CRSF_MAX_PAYLOAD_LEN (CRSF_MAX_PACKET_SIZE - 4) // Max size of payload in [dest] [len] [type] [payload] [crc8]
+#define CRSF_BITS_PER_CHANNEL   11
 
-// Clashes with CRSF_ADDRESS_FLIGHT_CONTROLLER
 #define CRSF_SYNC_BYTE 0XC8
 
 enum {
@@ -82,7 +82,7 @@ typedef enum
 
 typedef struct crsf_header_s
 {
-    uint8_t device_addr; // from crsf_addr_e
+    uint8_t sync_byte;   // CRSF_SYNC_BYTE
     uint8_t frame_size;  // counts size after this byte, so it must be the payload size + 2 (type and crc)
     uint8_t type;        // from crsf_frame_type_e
     uint8_t data[0];
@@ -110,14 +110,14 @@ typedef struct crsf_channels_s
 
 typedef struct crsfPayloadLinkstatistics_s
 {
-    uint8_t uplink_RSSI_1;
-    uint8_t uplink_RSSI_2;
+    int8_t uplink_RSSI_1;
+    int8_t uplink_RSSI_2;
     uint8_t uplink_Link_quality;
     int8_t uplink_SNR;
     uint8_t active_antenna;
     uint8_t rf_Mode;
     uint8_t uplink_TX_Power;
-    uint8_t downlink_RSSI;
+    int8_t downlink_RSSI;
     uint8_t downlink_Link_quality;
     int8_t downlink_SNR;
 } crsfLinkStatistics_t;
@@ -139,6 +139,11 @@ typedef struct crsf_sensor_gps_s
     uint16_t altitude;  // meters, +1000m big endian
     uint8_t satellites; // satellites
 } PACKED crsf_sensor_gps_t;
+
+// crsf = (us - 1500) * 8/5 + 992
+#define US_to_CRSF(us)      (us * 8 / 5 + (CRSF_CHANNEL_VALUE_MID - 2400))
+// us = (crsf - 992) * 5/8 + 1500
+#define CRSF_to_US(crsf)    (crsf * 5 / 8 + (1500 - 620))
 
 #if !defined(__linux__)
 static inline uint16_t htobe16(uint16_t val)

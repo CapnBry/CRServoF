@@ -237,7 +237,7 @@ static void checkVbatt()
     uint16_t scaledVoltage = g_State.vbatValue * VBAT_SCALE;
     // Values are MSB first (BigEndian)
     crsfbatt.voltage = htobe16(scaledVoltage);
-    crsf.queuePacket(CRSF_SYNC_BYTE, CRSF_FRAMETYPE_BATTERY_SENSOR, &crsfbatt, sizeof(crsfbatt));
+    crsf.queuePacket(CRSF_FRAMETYPE_BATTERY_SENSOR, &crsfbatt, sizeof(crsfbatt));
 
     //Serial.print("ADC="); Serial.print(adc, DEC);
     //Serial.print(" "); Serial.print(g_State.vbatValue, DEC); Serial.println("V");
@@ -251,7 +251,7 @@ static void passthroughBegin(uint32_t baud)
         // Force a reboot command since we want to send the reboot
         // at 420000 then switch to what the user wanted
         const uint8_t rebootpayload[] = { 'b', 'l' };
-        crsf.queuePacket(CRSF_ADDRESS_CRSF_RECEIVER, CRSF_FRAMETYPE_COMMAND, &rebootpayload, sizeof(rebootpayload));
+        crsf.queuePacket(CRSF_FRAMETYPE_COMMAND, &rebootpayload, sizeof(rebootpayload));
     }
 
     crsf.setPassthroughMode(true, baud);

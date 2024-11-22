@@ -18,11 +18,13 @@ public:
     void loop();
     void write(uint8_t b);
     void write(const uint8_t *buf, size_t len);
-    void queuePacket(uint8_t addr, uint8_t type, const void *payload, uint8_t len);
+    void queuePacket(uint8_t type, const void *payload, uint8_t len);
+    void queueChannelPacket();
 
     uint32_t getBaud() const { return _baud; };
     // Return current channel value (1-based) in us
     int getChannel(unsigned int ch) const { return _channels[ch - 1]; }
+    void setChannel(unsigned int ch, unsigned int value_us) { _channels[ch - 1] = value_us; }
     const crsfLinkStatistics_t *getLinkStatistics() const { return &_linkStatistics; }
     const crsf_sensor_gps_t *getGpsSensor() const { return &_gpsSensor; }
     bool isLinkUp() const { return _linkIsUp; }
