@@ -60,7 +60,7 @@ static void checkSendChannels()
     mixer(8, 2);
     // End mixer code
 
-    crsf.queueChannelPacket();
+    crsf.queuePacketChannels();
 }
 
 static void setupCrsfChannels()

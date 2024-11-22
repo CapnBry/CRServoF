@@ -19,7 +19,7 @@ public:
     void write(uint8_t b);
     void write(const uint8_t *buf, size_t len);
     void queuePacket(uint8_t type, const void *payload, uint8_t len);
-    void queueChannelPacket();
+    void queuePacketChannels();
 
     uint32_t getBaud() const { return _baud; };
     // Return current channel value (1-based) in us

@@ -274,7 +274,7 @@ void CrsfSerial::queuePacket(uint8_t type, const void *payload, uint8_t len)
  *              code handles none of that. This will, however, get a
  *              transmitter to start transmitting channels.
  */
-void CrsfSerial::queueChannelPacket()
+void CrsfSerial::queuePacketChannels()
 {
    // 11 bits per channel * 16 channels = 176 bits = 22 bytes
     uint8_t packedChannels[(CRSF_NUM_CHANNELS * CRSF_BITS_PER_CHANNEL + 7) / 8];
