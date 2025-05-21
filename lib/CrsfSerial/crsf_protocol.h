@@ -44,9 +44,12 @@ typedef enum
 {
     CRSF_FRAMETYPE_GPS = 0x02,
     CRSF_FRAMETYPE_BATTERY_SENSOR = 0x08,
-    CRSF_FRAMETYPE_LINK_STATISTICS = 0x14,
+    CRSF_FRAMETYPE_AIRSPEED = 0x0A,
+    CRSF_FRAMETYPE_RPM = 0x0C,
+    CRSF_FRAMETYPE_TEMP = 0x0D,
+    CRSF_FRAMETYPE_CELLS = 0x0E,
     CRSF_FRAMETYPE_OPENTX_SYNC = 0x10,
-    CRSF_FRAMETYPE_RADIO_ID = 0x3A,
+    CRSF_FRAMETYPE_LINK_STATISTICS = 0x14,
     CRSF_FRAMETYPE_RC_CHANNELS_PACKED = 0x16,
     CRSF_FRAMETYPE_ATTITUDE = 0x1E,
     CRSF_FRAMETYPE_FLIGHT_MODE = 0x21,
@@ -57,6 +60,7 @@ typedef enum
     CRSF_FRAMETYPE_PARAMETER_READ = 0x2C,
     CRSF_FRAMETYPE_PARAMETER_WRITE = 0x2D,
     CRSF_FRAMETYPE_COMMAND = 0x32,
+    CRSF_FRAMETYPE_RADIO_ID = 0x3A,
     // MSP commands
     CRSF_FRAMETYPE_MSP_REQ = 0x7A,   // response request using msp sequence as command
     CRSF_FRAMETYPE_MSP_RESP = 0x7B,  // reply with 58 byte chunked binary
@@ -108,37 +112,111 @@ typedef struct crsf_channels_s
     unsigned ch15 : 11;
 } PACKED crsf_channels_t;
 
+//CRSF_FRAMETYPE_BATTERY_SENSOR
+typedef struct crsf_sensor_battery_s
+{
+    unsigned voltage : 16;  // mv * 100 BigEndian
+    unsigned current : 16;  // ma * 100
+    unsigned capacity : 24; // mah
+    unsigned remaining : 8; // %
+} PACKED crsf_sensor_battery_t;
+
+// CRSF_FRAMETYPE_BARO_ALTITUDE
+typedef struct crsf_sensor_baro_vario_s
+{
+    uint16_t altitude; // Altitude in decimeters + 10000dm, or Altitude in meters if high bit is set, BigEndian
+    int16_t verticalspd;  // Vertical speed in cm/s, BigEndian
+} PACKED crsf_sensor_baro_vario_t;
+
+// CRSF_FRAMETYPE_AIRSPEED
+typedef struct crsf_sensor_airspeed_s
+{
+    uint16_t speed;             // Airspeed in 0.1 * km/h (hectometers/h)
+} PACKED crsf_sensor_airspeed_t;
+
+// CRSF_FRAMETYPE_RPM
+typedef struct crsf_sensor_rpm_s
+{
+    uint8_t source_id;          // Identifies the source of the RPM data (e.g., 0 = Motor 1, 1 = Motor 2, etc.)
+    int32_t rpm0:24;            // 1 - 19 RPM values with negative ones representing the motor spinning in reverse
+    int32_t rpm1:24;
+    int32_t rpm2:24;
+    int32_t rpm3:24;
+    int32_t rpm4:24;
+    int32_t rpm5:24;
+    int32_t rpm6:24;
+    int32_t rpm7:24;
+    int32_t rpm8:24;
+    int32_t rpm9:24;
+    int32_t rpm10:24;
+    int32_t rpm11:24;
+    int32_t rpm12:24;
+    int32_t rpm13:24;
+    int32_t rpm14:24;
+    int32_t rpm15:24;
+    int32_t rpm16:24;
+    int32_t rpm17:24;
+    int32_t rpm18:24;
+} PACKED crsf_sensor_rpm_t;
+
+// CRSF_FRAMETYPE_TEMP
+typedef struct crsf_sensor_temp_s
+{
+    uint8_t source_id;            // Identifies the source of the temperature data (e.g., 0 = FC including all ESCs, 1 = Ambient, etc.)
+    int16_t temperature[20];      // up to 20 temperature values in deci-degree (tenths of a degree) Celsius (e.g., 250 = 25.0°C, -50 = -5.0°C)
+} PACKED crsf_sensor_temp_t;
+
+// CRSF_FRAMETYPE_CELLS
+typedef struct crsf_sensor_cells_s
+{
+    uint8_t source_id;            // Identifies the source of the Main_battery data (e.g., 0 = battery 1, 1 = battery 2, etc.)
+    uint16_t cell[29];            // up to 29 cell values in a resolution of a thousandth of a Volt (e.g. 3.850V = 3850)
+} PACKED crsf_sensor_cells_t;
+
+// CRSF_FRAMETYPE_VARIO
+typedef struct crsf_sensor_vario_s
+{
+    int16_t verticalspd;  // Vertical speed in cm/s, BigEndian
+} PACKED crsf_sensor_vario_t;
+
+// CRSF_FRAMETYPE_GPS
+typedef struct crsf_sensor_gps_s
+{
+    int32_t latitude; // degree / 10`000`000
+    int32_t longitude; // degree / 10`000`000
+    uint16_t groundspeed; // km/h / 10
+    uint16_t heading; // degree / 100
+    uint16_t altitude; // meter ­1000m offset
+    uint8_t satellites; // counter
+} PACKED crsf_sensor_gps_t;
+
+// CRSF_FRAMETYPE_ATTITUDE
+typedef struct crsf_sensor_attitude_s
+{
+    int16_t pitch; // radians * 10000
+    int16_t roll; // radians * 10000
+    int16_t yaw; // radians * 10000
+} PACKED crsf_sensor_attitude_t;
+
+// CRSF_FRAMETYPE_FLIGHT_MODE
+typedef struct crsf_sensor_flight_mode_s
+{
+    char flight_mode[16];
+} PACKED crsf_flight_mode_t;
+
 typedef struct crsfPayloadLinkstatistics_s
 {
-    int8_t uplink_RSSI_1;
-    int8_t uplink_RSSI_2;
+    uint8_t uplink_RSSI_1;
+    uint8_t uplink_RSSI_2;
     uint8_t uplink_Link_quality;
     int8_t uplink_SNR;
     uint8_t active_antenna;
     uint8_t rf_Mode;
     uint8_t uplink_TX_Power;
-    int8_t downlink_RSSI;
+    uint8_t downlink_RSSI_1;
     uint8_t downlink_Link_quality;
     int8_t downlink_SNR;
-} crsfLinkStatistics_t;
-
-typedef struct crsf_sensor_battery_s
-{
-    uint32_t voltage : 16;  // V * 10 big endian
-    uint32_t current : 16;  // A * 10 big endian
-    uint32_t capacity : 24; // mah big endian
-    uint32_t remaining : 8; // %
-} PACKED crsf_sensor_battery_t;
-
-typedef struct crsf_sensor_gps_s
-{
-    int32_t latitude;   // degree / 10,000,000 big endian
-    int32_t longitude;  // degree / 10,000,000 big endian
-    uint16_t groundspeed;  // km/h / 10 big endian
-    uint16_t heading;   // GPS heading, degree/100 big endian
-    uint16_t altitude;  // meters, +1000m big endian
-    uint8_t satellites; // satellites
-} PACKED crsf_sensor_gps_t;
+} PACKED crsfLinkStatistics_t;
 
 // crsf = (us - 1500) * 8/5 + 992
 #define US_to_CRSF(us)      ((us) * 8 / 5 + (CRSF_CHANNEL_VALUE_MID - 2400))
@@ -181,4 +259,10 @@ static inline uint32_t be32toh(uint32_t val)
     return __builtin_bswap32(val);
 #endif
 }
+
+static inline int htobe24(int val)
+{
+    return htobe32(val) >> 8;
+}
+
 #endif
